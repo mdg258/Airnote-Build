@@ -46,6 +46,16 @@ export const HomeScreen: React.FC = () => {
     }
   }, [location.latitude, location.longitude, refreshKey, radius]);
 
+  // Auto-seed on first load if no notes exist
+  useEffect(() => {
+    const allNotes = notesService.getAllNotes();
+    if (allNotes.length === 0) {
+      // Seed with actual locations
+      notesService.seedNotes();
+      setRefreshKey((prev) => prev + 1);
+    }
+  }, []);
+
   const refreshNotes = () => {
     if (!location.latitude || !location.longitude) return;
     notesService.purgeExpiredNotes();

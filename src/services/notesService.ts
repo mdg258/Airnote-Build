@@ -189,4 +189,141 @@ export const notesService = {
   clearAllNotes: (): void => {
     notes = [];
   },
+
+  /**
+   * Seed sample notes at specific locations
+   * Call this function to populate test data
+   */
+  seedNotes: (): void => {
+    const now = new Date();
+
+    // Clear existing notes first
+    notes = [];
+
+    const seedData = [
+      // DQ Grill & Chill notes
+      {
+        text: 'Half-price blizzards today 2-4pm!',
+        placeName: 'DQ Grill & Chill',
+        placeId: 'dq-grill-chill',
+        latitude: 37.43307246741869,
+        longitude: -77.61065958748061,
+        radius: 100,
+        duration: '30m' as Duration,
+      },
+      {
+        text: 'Order the chicken strip basket - best value on the menu',
+        placeName: 'DQ Grill & Chill',
+        placeId: 'dq-grill-chill',
+        latitude: 37.43307246741869,
+        longitude: -77.61065958748061,
+        radius: 75,
+        duration: '1h' as Duration,
+      },
+      {
+        text: 'Soft serve machine is working today! 🎉',
+        placeName: 'DQ Grill & Chill',
+        placeId: 'dq-grill-chill',
+        latitude: 37.43307246741869,
+        longitude: -77.61065958748061,
+        radius: 100,
+        duration: '15m' as Duration,
+      },
+
+      // Goodwill notes
+      {
+        text: 'Saw vintage Nintendo games here - shelf near back',
+        placeName: 'Goodwill',
+        placeId: 'goodwill',
+        latitude: 37.432908540766825,
+        longitude: -77.61145697314196,
+        radius: 60,
+        duration: '1h' as Duration,
+      },
+      {
+        text: '50% off all clothing today only!',
+        placeName: 'Goodwill',
+        placeId: 'goodwill',
+        latitude: 37.432908540766825,
+        longitude: -77.61145697314196,
+        radius: 100,
+        duration: '4h' as Duration,
+      },
+
+      // Ample Storage notes
+      {
+        text: 'Moving boxes available - free to take!',
+        placeName: 'Ample Storage',
+        placeId: 'ample-storage',
+        latitude: 37.43048068582967,
+        longitude: -77.61127496661474,
+        radius: 75,
+        duration: '4h' as Duration,
+      },
+      {
+        text: 'Unit 42 door sticks - push hard on bottom left',
+        placeName: 'Ample Storage',
+        placeId: 'ample-storage',
+        latitude: 37.43048068582967,
+        longitude: -77.61127496661474,
+        radius: 50,
+        duration: '24h' as Duration,
+      },
+
+      // Greg's Garage notes
+      {
+        text: "Ask for Mike - he'll give you the best price on oil changes",
+        placeName: "Greg's Garage",
+        placeId: 'gregs-garage',
+        latitude: 37.433646399865566,
+        longitude: -77.60932126312186,
+        radius: 75,
+        duration: '24h' as Duration,
+      },
+      {
+        text: 'Appointment running 30 min late - grab coffee next door',
+        placeName: "Greg's Garage",
+        placeId: 'gregs-garage',
+        latitude: 37.433646399865566,
+        longitude: -77.60932126312186,
+        radius: 50,
+        duration: '15m' as Duration,
+      },
+      {
+        text: 'They accept walk-ins for tire rotation - no appointment needed',
+        placeName: "Greg's Garage",
+        placeId: 'gregs-garage',
+        latitude: 37.433646399865566,
+        longitude: -77.60932126312186,
+        radius: 100,
+        duration: '4h' as Duration,
+      },
+    ];
+
+    // Create all seed notes
+    seedData.forEach((data) => {
+      const expiresAt = new Date(now.getTime() + durationToMs(data.duration));
+
+      const note: Note = {
+        id: generateId(),
+        text: data.text,
+        location: {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+        placeName: data.placeName,
+        placeAddress: undefined, // Can be added if needed
+        placeId: data.placeId,
+        radius: data.radius,
+        createdAt: now,
+        expiresAt,
+        duration: data.duration,
+        userId: CURRENT_USER_ID,
+      };
+
+      notes.push(note);
+    });
+
+    console.log(`Seeded ${seedData.length} notes at various locations`);
+  },
 };
