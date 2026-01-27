@@ -29,3 +29,14 @@ export interface CreateNoteInput {
   radius: Radius;
   duration: Duration;
 }
+
+export interface PlaceGroup {
+  placeId: string;
+  placeName: string;
+  placeAddress?: string;
+  latitude: number;
+  longitude: number;
+  notes: Array<Note & { distance: number; timeLeft: number }>;
+  noteCount: number;
+  closestDistance: number;
+}
