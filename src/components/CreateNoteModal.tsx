@@ -73,6 +73,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
             showsVerticalScrollIndicator={false}
             style={styles.scrollContent}
             contentContainerStyle={styles.scrollContentContainer}
+            keyboardShouldPersistTaps="handled"
           >
             {/* Text Input */}
             <View style={styles.section}>
@@ -245,29 +246,34 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    ...typography.heading,
+    fontSize: 22,
+    fontWeight: '600',
   },
   closeButton: {
-    fontSize: 24,
-    padding: spacing.xs,
+    fontSize: 28,
+    padding: spacing.sm,
+    minWidth: 44,
+    minHeight: 44,
+    textAlign: 'center',
   },
   section: {
     marginBottom: spacing.lg,
   },
   label: {
-    ...typography.body,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: spacing.sm,
   },
   textInput: {
     ...typography.body,
+    fontSize: 16,
     borderRadius: borderRadius.sm,
-    padding: spacing.md,
-    minHeight: 100,
+    padding: spacing.lg,
+    minHeight: 120,
     borderWidth: 1,
   },
   charCount: {
-    ...typography.small,
+    fontSize: 14,
     textAlign: 'right',
     marginTop: spacing.xs,
   },
@@ -275,37 +281,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    justifyContent: 'space-between',
   },
   option: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     borderRadius: borderRadius.full,
     borderWidth: 1,
+    flex: 1,
+    minWidth: 60,
+    alignItems: 'center',
   },
   optionText: {
-    ...typography.caption,
-    fontWeight: '500',
+    ...typography.body,
+    fontWeight: '600',
   },
   photoButton: {
-    padding: spacing.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
     borderWidth: 1,
     opacity: 0.5,
+    minHeight: 56,
   },
   photoButtonText: {
-    ...typography.body,
+    fontSize: 16,
   },
   postButton: {
-    padding: spacing.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
+    minHeight: 56,
   },
   postButtonDisabled: {
     opacity: 0.5,
   },
   postButtonText: {
-    ...typography.body,
+    fontSize: 17,
     fontWeight: '600',
   },
 });
