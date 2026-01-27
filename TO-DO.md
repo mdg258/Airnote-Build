@@ -1,5 +1,64 @@
 # To-Do List
 
+- change location back so that users can only tag a place within a very small radius (100m)
+
+
+<br>
+<br>
+
+<hr>
+<hr>
+
+
+Implement Option A: a live radius preview map inside CreateNoteModal.
+
+Context:
+- Radius options are: 30ft, 75ft, 150ft, 300ft
+- We want the user to SEE how far the note will reach when selecting radius.
+
+Requirements:
+1) In CreateNoteModal.tsx, add a small embedded MapView preview directly under the Radius selector.
+   - Height: ~160–190px
+   - Rounded corners, subtle border/shadow to match Airnote cards
+   - Should not scroll-jank the modal
+
+2) Center the MapView on the user’s current coordinates using our existing location hook/util.
+   - Create a stable `initialRegion` around the user.
+   - Keep the map mostly static (no heavy interactions required). Allow light pan/zoom if easy.
+
+3) Draw a Circle overlay centered on the user:
+   - Convert feet to meters: meters = feet * 0.3048
+   - Update the Circle radius live when user selects 30/75/150/300.
+   - Use Airnote teal with subtle fill + thin stroke (match theme).
+
+4) Auto-fit / zoom so the circle is always visible:
+   - When radius changes, call `mapRef.current?.fitToCoordinates(...)` or set region deltas so the entire circle stays in frame.
+   - Add padding so the circle doesn’t touch edges.
+
+5) Location off / unavailable:
+   - If permission denied or coords missing, show a placeholder card in the same spot:
+     “Enable location to preview radius.”
+   - No crashes.
+
+6) Performance:
+   - Memoize region and derived meters value.
+   - Avoid re-rendering the entire modal on every map region change (don’t store region in state unless needed).
+   - Use a ref for MapView.
+
+Deliverable:
+- Only implement this preview in CreateNoteModal (no new screens).
+- Ensure it works in Expo Go on iOS.
+
+Notes:
+- Keep the rest of CreateNoteModal UI unchanged.
+
+
+<hr>
+<hr>
+
+<br>
+<br>
+
 **Onboarding + permissions**
 
 * First-launch onboarding (3 slides max: “Here. Now. Together.” + how it works)

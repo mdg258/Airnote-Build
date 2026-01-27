@@ -90,7 +90,7 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
                 key={note.id}
                 note={note}
                 timeLeft={note.timeLeft}
-                showLocation={false}
+                showLocation={true}
               />
             ))}
             <View style={styles.bottomSpacer} />

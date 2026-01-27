@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,11 +12,13 @@ import { LocationChip } from '../components/LocationChip';
 import { NoteCard } from '../components/NoteCard';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
+import { PlaceGroupCard } from '../components/PlaceGroupCard';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
-import { Duration, Radius, Note } from '../types/note';
+import { Duration, Radius, Note, PlaceGroup } from '../types/note';
 import { spacing, typography } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
+import { groupNotesByPlace } from '../utils/location';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -44,9 +46,13 @@ export const HomeScreen: React.FC = () => {
   const refreshNotes = () => {
     if (!location.latitude || !location.longitude) return;
     notesService.purgeExpiredNotes();
-    const notes = notesService.getNearbyNotes(location.latitude, location.longitude);
+    const notes = notesService.getAllNotesWithinDistance(location.latitude, location.longitude, 1609);
     setNearbyNotes(notes);
   };
+
+  const placeGroups = useMemo(() => {
+    return groupNotesByPlace(nearbyNotes, 1609);
+  }, [nearbyNotes]);
 
   const handleCreateNote = (
     text: string,
@@ -91,8 +97,9 @@ export const HomeScreen: React.FC = () => {
     }
     return (
       <View style={styles.emptyState}>
+        <Text style={styles.emptyIcon}>📍</Text>
         <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No notes nearby</Text>
-        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>Be the first to leave a note here!</Text>
+        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>Notes within 1 mile will appear here</Text>
       </View>
     );
   };
@@ -102,11 +109,9 @@ export const HomeScreen: React.FC = () => {
       <Header />
       <LocationChip placeName={location.placeName} hasPermission={location.hasPermission} />
       <FlatList
-        data={nearbyNotes}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NoteCard note={item} distance={item.distance} timeLeft={item.timeLeft} />
-        )}
+        data={placeGroups}
+        keyExtractor={(item) => item.placeId}
+        renderItem={({ item }) => <PlaceGroupCard placeGroup={item} />}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
@@ -137,6 +142,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: spacing.lg,
   },
   emptyText: {
     ...typography.heading,

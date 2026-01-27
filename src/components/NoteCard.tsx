@@ -24,8 +24,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, sh
       <View style={styles.header}>
         {showLocation ? (
           <View style={{ flex: 1, marginRight: spacing.sm }}>
-            <Text style={[styles.location, { color: theme.text.secondary }]}>
-              📍 {note.placeName || 'Unknown location'}
+            <Text style={[styles.location, { color: theme.text.primary }]}>
+              <Text style={{ color: theme.primaryDark }}>📍 </Text>
+              {note.placeName || 'Unknown location'}
             </Text>
             {note.placeAddress && (
               <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
@@ -53,7 +54,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, sh
 const styles = StyleSheet.create({
   card: {
     borderRadius: borderRadius.md,
-    padding: spacing.md,
+    padding: spacing.sm,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
     shadowOffset: { width: 0, height: 2 },
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   distance: {
     ...typography.small,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typography.body,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   footer: {
     flexDirection: 'row',
