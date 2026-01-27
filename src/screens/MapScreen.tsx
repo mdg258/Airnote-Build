@@ -15,9 +15,13 @@ import { notesService } from '../services/notesService';
 import { PlaceGroup, Note } from '../types/note';
 import { groupNotesByPlace, getMarkerColor, getMapRegion } from '../utils/location';
 import { PlaceNotesModal } from '../components/PlaceNotesModal';
+import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
+import { CustomMarker } from '../components/CustomMarker';
+import { MapBottomDrawer } from '../components/MapBottomDrawer';
 
 export const MapScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, themeMode } = useTheme();
+  const isDark = themeMode === 'dark';
   const location = useLocation();
   const mapRef = useRef<MapView>(null);
   const [selectedPlace, setSelectedPlace] = useState<PlaceGroup | null>(null);
@@ -26,6 +30,7 @@ export const MapScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sortMode, setSortMode] = useState<'distance' | 'recent'>('distance');
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
@@ -88,6 +93,28 @@ export const MapScreen: React.FC = () => {
   const handleModalClose = useCallback(() => {
     setModalVisible(false);
     setSelectedPlace(null);
+  }, []);
+
+  // Handle drawer place press
+  const handleDrawerPlacePress = useCallback((place: PlaceGroup) => {
+    // Center map on place
+    mapRef.current?.animateToRegion({
+      latitude: place.latitude,
+      longitude: place.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }, 300);
+
+    // Open modal after brief delay
+    setTimeout(() => {
+      setSelectedPlace(place);
+      setModalVisible(true);
+    }, 350);
+  }, []);
+
+  // Handle sort change
+  const handleSortChange = useCallback((mode: 'distance' | 'recent') => {
+    setSortMode(mode);
   }, []);
 
   // Loading state
@@ -155,6 +182,7 @@ export const MapScreen: React.FC = () => {
           ref={mapRef}
           style={styles.map}
           initialRegion={mapRegion}
+          customMapStyle={isDark ? darkMapStyle : lightMapStyle}
           showsUserLocation={true}
           showsMyLocationButton={false}
           showsCompass={false}
@@ -163,12 +191,10 @@ export const MapScreen: React.FC = () => {
           loadingIndicatorColor={theme.primaryDark}
         >
           {placeGroups.map((group) => (
-            <Marker
+            <CustomMarker
               key={group.placeId}
               coordinate={{ latitude: group.latitude, longitude: group.longitude }}
-              pinColor={getMarkerColor(group.noteCount)}
-              title={group.placeName}
-              description={`${group.noteCount} note${group.noteCount > 1 ? 's' : ''}`}
+              noteCount={group.noteCount}
               onPress={() => handleMarkerPress(group)}
             />
           ))}
@@ -187,6 +213,16 @@ export const MapScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+        )}
+
+        {/* Bottom Drawer */}
+        {placeGroups.length > 0 && (
+          <MapBottomDrawer
+            placeGroups={placeGroups}
+            onPlacePress={handleDrawerPlacePress}
+            sortMode={sortMode}
+            onSortChange={handleSortChange}
+          />
         )}
       </View>
 
