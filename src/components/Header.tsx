@@ -1,18 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, typography } from '../theme/colors';
+import { spacing } from '../theme/colors';
 import { AirnoteLogo } from './AirnoteLogo';
+import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const Header: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.header}>
       <View style={styles.leftSection}>
         <AirnoteLogo size="medium" />
-        <Text style={styles.title}>Airnote</Text>
+        <Text style={[styles.title, { color: theme.text.primary }]}>Airnote</Text>
       </View>
-      <View style={styles.bellIcon}>
-        <Text style={styles.bellIconText}>🔔</Text>
-      </View>
+      <ThemeToggle />
     </View>
   );
 };
@@ -35,16 +37,5 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '600' as const,
     lineHeight: 40,
-    color: colors.text.primary,
-  },
-  bellIcon: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bellIconText: {
-    fontSize: 20,
-    opacity: 0.7,
   },
 });
