@@ -9,9 +9,10 @@ interface NoteCardProps {
   note: Note;
   distance?: number;
   timeLeft: number;
+  showLocation?: boolean;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, showLocation = false }) => {
   const { theme } = useTheme();
 
   return (
@@ -21,7 +22,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) 
       shadowColor: theme.shadow,
     }]}>
       <View style={styles.header}>
-        {distance !== undefined ? (
+        {showLocation ? (
+          <Text style={[styles.location, { color: theme.text.secondary }]}>
+            📍 {note.placeName || 'Unknown location'}
+          </Text>
+        ) : distance !== undefined ? (
           <Text style={[styles.distance, { color: theme.primaryDark }]}>{formatDistance(distance)} away</Text>
         ) : (
           <View />
@@ -30,7 +35,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) 
       </View>
       <Text style={[styles.text, { color: theme.text.primary }]}>{note.text}</Text>
       <View style={styles.footer}>
-        <Text style={[styles.metadata, { color: theme.text.tertiary }]}>Radius: {note.radius}m</Text>
+        <Text style={[styles.metadata, { color: theme.text.tertiary }]}>
+          Radius: {Math.round(note.radius * 3.28084)}ft
+        </Text>
       </View>
     </View>
   );
@@ -57,6 +64,10 @@ const styles = StyleSheet.create({
   distance: {
     ...typography.small,
     fontWeight: '600',
+  },
+  location: {
+    ...typography.small,
+    fontWeight: '500',
   },
   timeLeft: {
     ...typography.small,

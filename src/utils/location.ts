@@ -26,10 +26,12 @@ export const calculateDistance = (
  * Format distance for display
  */
 export const formatDistance = (meters: number): string => {
-  if (meters < 1000) {
-    return `${Math.round(meters)}m`;
+  const feet = meters * 3.28084;
+  if (feet < 1000) {
+    return `${Math.round(feet)}ft`;
   }
-  return `${(meters / 1000).toFixed(1)}km`;
+  const miles = feet / 5280;
+  return `${miles.toFixed(1)}mi`;
 };
 
 /**

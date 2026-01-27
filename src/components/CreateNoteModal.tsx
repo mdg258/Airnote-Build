@@ -11,7 +11,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { Duration, Radius } from '../types/note';
-import { colors, spacing, borderRadius, typography } from '../theme/colors';
+import { spacing, borderRadius, typography } from '../theme/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CreateNoteModalProps {
   visible: boolean;
@@ -20,30 +21,31 @@ interface CreateNoteModalProps {
 }
 
 const DURATIONS: Duration[] = ['15m', '30m', '1h', '4h', '24h'];
-const RADII: Radius[] = [10, 25, 50, 100];
+const RADII: Radius[] = [9.14, 22.86, 45.72, 91.44];
 
 export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   visible,
   onClose,
   onCreate,
 }) => {
+  const { theme } = useTheme();
   const [text, setText] = useState('');
   const [duration, setDuration] = useState<Duration>('1h');
-  const [radius, setRadius] = useState<Radius>(25);
+  const [radius, setRadius] = useState<Radius>(22.86);
 
   const handlePost = () => {
     if (text.trim().length === 0) return;
     onCreate(text.trim(), duration, radius);
     setText('');
     setDuration('1h');
-    setRadius(25);
+    setRadius(22.86);
     onClose();
   };
 
   const handleCancel = () => {
     setText('');
     setDuration('1h');
-    setRadius(25);
+    setRadius(22.86);
     onClose();
   };
 
@@ -59,11 +61,11 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
         style={styles.overlay}
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleCancel} />
-        <View style={styles.modal}>
+        <View style={[styles.modal, { backgroundColor: theme.card }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Create Note</Text>
+            <Text style={[styles.title, { color: theme.text.primary }]}>Create Note</Text>
             <TouchableOpacity onPress={handleCancel}>
-              <Text style={styles.closeButton}>✕</Text>
+              <Text style={[styles.closeButton, { color: theme.text.secondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
@@ -74,11 +76,18 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
           >
             {/* Text Input */}
             <View style={styles.section}>
-              <Text style={styles.label}>Message</Text>
+              <Text style={[styles.label, { color: theme.text.primary }]}>Message</Text>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: theme.background,
+                    color: theme.text.primary,
+                    borderColor: theme.cardBorder,
+                  },
+                ]}
                 placeholder="What do you want to say?"
-                placeholderTextColor={colors.text.tertiary}
+                placeholderTextColor={theme.text.tertiary}
                 value={text}
                 onChangeText={setText}
                 maxLength={200}
@@ -86,23 +95,31 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
                 numberOfLines={4}
                 textAlignVertical="top"
               />
-              <Text style={styles.charCount}>{text.length}/200</Text>
+              <Text style={[styles.charCount, { color: theme.text.tertiary }]}>{text.length}/200</Text>
             </View>
 
             {/* Duration Selection */}
             <View style={styles.section}>
-              <Text style={styles.label}>Duration</Text>
+              <Text style={[styles.label, { color: theme.text.primary }]}>Duration</Text>
               <View style={styles.optionsRow}>
                 {DURATIONS.map((d) => (
                   <TouchableOpacity
                     key={d}
-                    style={[styles.option, duration === d && styles.optionSelected]}
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: duration === d ? theme.primaryDark : theme.background,
+                        borderColor: duration === d ? theme.primaryDark : theme.cardBorder,
+                      },
+                    ]}
                     onPress={() => setDuration(d)}
                   >
                     <Text
                       style={[
                         styles.optionText,
-                        duration === d && styles.optionTextSelected,
+                        {
+                          color: duration === d ? theme.text.inverse : theme.text.primary,
+                        },
                       ]}
                     >
                       {d}
@@ -114,21 +131,29 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
 
             {/* Radius Selection */}
             <View style={styles.section}>
-              <Text style={styles.label}>Radius</Text>
+              <Text style={[styles.label, { color: theme.text.primary }]}>Radius</Text>
               <View style={styles.optionsRow}>
                 {RADII.map((r) => (
                   <TouchableOpacity
                     key={r}
-                    style={[styles.option, radius === r && styles.optionSelected]}
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: radius === r ? theme.primaryDark : theme.background,
+                        borderColor: radius === r ? theme.primaryDark : theme.cardBorder,
+                      },
+                    ]}
                     onPress={() => setRadius(r)}
                   >
                     <Text
                       style={[
                         styles.optionText,
-                        radius === r && styles.optionTextSelected,
+                        {
+                          color: radius === r ? theme.text.inverse : theme.text.primary,
+                        },
                       ]}
                     >
-                      {r}m
+                      {Math.round(r * 3.28084)}ft
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -137,20 +162,45 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
 
             {/* Photo Placeholder */}
             <View style={styles.section}>
-              <TouchableOpacity style={styles.photoButton} disabled>
-                <Text style={styles.photoButtonText}>📷 Attach Photo (Coming Soon)</Text>
+              <TouchableOpacity
+                style={[
+                  styles.photoButton,
+                  {
+                    backgroundColor: theme.background,
+                    borderColor: theme.cardBorder,
+                  },
+                ]}
+                disabled
+              >
+                <Text style={[styles.photoButtonText, { color: theme.text.secondary }]}>
+                  📷 Attach Photo (Coming Soon)
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
 
           {/* Post Button - Fixed at bottom */}
-          <View style={styles.buttonContainer}>
+          <View
+            style={[
+              styles.buttonContainer,
+              {
+                borderTopColor: theme.cardBorder,
+                backgroundColor: theme.card,
+              },
+            ]}
+          >
             <TouchableOpacity
-              style={[styles.postButton, text.trim().length === 0 && styles.postButtonDisabled]}
+              style={[
+                styles.postButton,
+                {
+                  backgroundColor: text.trim().length === 0 ? theme.text.tertiary : theme.primaryDark,
+                },
+                text.trim().length === 0 && styles.postButtonDisabled,
+              ]}
               onPress={handlePost}
               disabled={text.trim().length === 0}
             >
-              <Text style={styles.postButtonText}>Send Note</Text>
+              <Text style={[styles.postButtonText, { color: theme.text.inverse }]}>Send Note</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -169,7 +219,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modal: {
-    backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
     paddingTop: spacing.lg,
@@ -188,8 +237,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
-    backgroundColor: colors.card,
   },
   header: {
     flexDirection: 'row',
@@ -199,11 +246,9 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.text.primary,
   },
   closeButton: {
     fontSize: 24,
-    color: colors.text.secondary,
     padding: spacing.xs,
   },
   section: {
@@ -212,22 +257,17 @@ const styles = StyleSheet.create({
   label: {
     ...typography.body,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   textInput: {
     ...typography.body,
-    backgroundColor: colors.background,
     borderRadius: borderRadius.sm,
     padding: spacing.md,
     minHeight: 100,
-    color: colors.text.primary,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   charCount: {
     ...typography.small,
-    color: colors.text.tertiary,
     textAlign: 'right',
     marginTop: spacing.xs,
   },
@@ -237,51 +277,35 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   option: {
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  optionSelected: {
-    backgroundColor: colors.primaryDark,
-    borderColor: colors.primaryDark,
   },
   optionText: {
     ...typography.caption,
-    color: colors.text.primary,
     fontWeight: '500',
   },
-  optionTextSelected: {
-    color: colors.text.inverse,
-  },
   photoButton: {
-    backgroundColor: colors.background,
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
     opacity: 0.5,
   },
   photoButtonText: {
     ...typography.body,
-    color: colors.text.secondary,
   },
   postButton: {
-    backgroundColor: colors.primaryDark,
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
   },
   postButtonDisabled: {
-    backgroundColor: colors.text.tertiary,
     opacity: 0.5,
   },
   postButtonText: {
     ...typography.body,
     fontWeight: '600',
-    color: colors.text.inverse,
   },
 });

@@ -47,6 +47,7 @@ export const ProfileScreen: React.FC = () => {
           <NoteCard
             note={item}
             timeLeft={item.timeLeft}
+            showLocation={true}
           />
         )}
         keyExtractor={(item) => item.id}

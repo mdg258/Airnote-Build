@@ -55,6 +55,7 @@ export const HomeScreen: React.FC = () => {
       duration,
       radius,
       location: { latitude: location.latitude, longitude: location.longitude },
+      placeName: location.placeName || undefined,
     });
     setRefreshKey((prev) => prev + 1);
   };
