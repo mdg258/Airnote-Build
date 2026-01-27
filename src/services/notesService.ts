@@ -1,0 +1,114 @@
+import { Note, CreateNoteInput, Duration } from '../types/note';
+import { calculateDistance } from '../utils/location';
+
+// In-memory storage for notes
+let notes: Note[] = [];
+
+// Helper to convert duration to milliseconds
+const durationToMs = (duration: Duration): number => {
+  const map: Record<Duration, number> = {
+    '15m': 15 * 60 * 1000,
+    '30m': 30 * 60 * 1000,
+    '1h': 60 * 60 * 1000,
+    '4h': 4 * 60 * 60 * 1000,
+    '24h': 24 * 60 * 60 * 1000,
+  };
+  return map[duration];
+};
+
+// Generate a simple unique ID
+const generateId = (): string => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
+export const notesService = {
+  /**
+   * Create a new note
+   */
+  createNote: (input: CreateNoteInput): Note => {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + durationToMs(input.duration));
+
+    const note: Note = {
+      id: generateId(),
+      text: input.text,
+      location: input.location,
+      radius: input.radius,
+      createdAt: now,
+      expiresAt,
+      duration: input.duration,
+    };
+
+    notes.push(note);
+    return note;
+  },
+
+  /**
+   * Get all notes near a location
+   * Filters by:
+   * - Distance from user location must be <= note's radius
+   * - Note must not be expired
+   */
+  getNearbyNotes: (
+    userLatitude: number,
+    userLongitude: number
+  ): Array<Note & { distance: number; timeLeft: number }> => {
+    const now = new Date();
+
+    return notes
+      .filter((note) => {
+        // Remove expired notes
+        if (now > note.expiresAt) return false;
+
+        // Calculate distance from user to note
+        const distance = calculateDistance(
+          userLatitude,
+          userLongitude,
+          note.location.latitude,
+          note.location.longitude
+        );
+
+        // Only show notes within their defined radius
+        return distance <= note.radius;
+      })
+      .map((note) => {
+        const distance = calculateDistance(
+          userLatitude,
+          userLongitude,
+          note.location.latitude,
+          note.location.longitude
+        );
+
+        const timeLeft = note.expiresAt.getTime() - now.getTime();
+
+        return {
+          ...note,
+          distance,
+          timeLeft,
+        };
+      })
+      .sort((a, b) => a.distance - b.distance); // Sort by closest first
+  },
+
+  /**
+   * Clean up expired notes
+   */
+  purgeExpiredNotes: (): void => {
+    const now = new Date();
+    notes = notes.filter((note) => note.expiresAt > now);
+  },
+
+  /**
+   * Get all notes (for debugging)
+   */
+  getAllNotes: (): Note[] => {
+    return notes;
+  },
+
+  /**
+   * Clear all notes (for debugging/testing)
+   */
+  clearAllNotes: (): void => {
+    notes = [];
+  },
+};
