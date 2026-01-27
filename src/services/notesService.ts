@@ -318,7 +318,7 @@ export const notesService = {
         createdAt: now,
         expiresAt,
         duration: data.duration,
-        userId: CURRENT_USER_ID,
+        userId: 'seed-user', // Use different userId so seed notes don't appear in "My Notes"
       };
 
       notes.push(note);
