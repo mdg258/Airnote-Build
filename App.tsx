@@ -5,6 +5,7 @@ import {
   FlatList,
   Text,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -104,10 +105,13 @@ export default function App() {
     );
   };
 
+  const ContainerComponent = Platform.OS === 'web' ? View : SafeAreaView;
+  const containerProps = Platform.OS === 'web' ? {} : { edges: ['top'] };
+
   return (
     <>
       <StatusBar style="dark" />
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <ContainerComponent style={styles.container} {...containerProps}>
         <Header />
         <LocationChip
           placeName={location.placeName}
@@ -132,7 +136,7 @@ export default function App() {
           onClose={() => setModalVisible(false)}
           onCreate={handleCreateNote}
         />
-      </SafeAreaView>
+      </ContainerComponent>
     </>
   );
 }
@@ -141,6 +145,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: Platform.OS === 'web' ? spacing.lg : 0,
   },
   listContent: {
     paddingTop: spacing.sm,

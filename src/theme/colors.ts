@@ -65,3 +65,9 @@ export const typography = {
     lineHeight: 16,
   },
 } as const;
+
+export const logoSizes = {
+  small: 22,
+  medium: 32,
+  large: 48,
+} as const;
