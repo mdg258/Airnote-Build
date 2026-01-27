@@ -4,6 +4,9 @@ import { calculateDistance } from '../utils/location';
 // In-memory storage for notes
 let notes: Note[] = [];
 
+// Current user ID (in MVP, we use a constant - would come from auth in production)
+const CURRENT_USER_ID = 'current-user';
+
 // Helper to convert duration to milliseconds
 const durationToMs = (duration: Duration): number => {
   const map: Record<Duration, number> = {
@@ -37,6 +40,7 @@ export const notesService = {
       createdAt: now,
       expiresAt,
       duration: input.duration,
+      userId: CURRENT_USER_ID,
     };
 
     notes.push(note);
@@ -88,6 +92,28 @@ export const notesService = {
         };
       })
       .sort((a, b) => a.distance - b.distance); // Sort by closest first
+  },
+
+  /**
+   * Get notes created by the current user
+   * Filters out expired notes
+   */
+  getUserNotes: (): Array<Note & { timeLeft: number }> => {
+    const now = new Date();
+
+    return notes
+      .filter((note) => {
+        // Only show user's own notes that haven't expired
+        return note.userId === CURRENT_USER_ID && now <= note.expiresAt;
+      })
+      .map((note) => {
+        const timeLeft = note.expiresAt.getTime() - now.getTime();
+        return {
+          ...note,
+          timeLeft,
+        };
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Sort by newest first
   },
 
   /**

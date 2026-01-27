@@ -22,9 +22,9 @@ export const TabNavigator: React.FC = () => {
           backgroundColor: theme.card,
           borderTopWidth: 1,
           borderTopColor: theme.cardBorder,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 86,
+          paddingBottom: 28,
+          paddingTop: 10,
         },
       }}
     >
@@ -33,7 +33,7 @@ export const TabNavigator: React.FC = () => {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={28} color={color} />
           ),
         }}
       />
@@ -42,7 +42,7 @@ export const TabNavigator: React.FC = () => {
         component={MapScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'map' : 'map-outline'} size={28} color={color} />
           ),
         }}
       />
@@ -51,7 +51,7 @@ export const TabNavigator: React.FC = () => {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />
           ),
         }}
       />

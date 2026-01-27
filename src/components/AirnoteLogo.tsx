@@ -14,14 +14,14 @@ export const AirnoteLogo: React.FC<AirnoteLogoProps> = ({ size }) => {
   return (
     <Image
       source={require('../../assets/logo.png')}
-      style={[styles.logo, { width: dimension, height: dimension }]}
-      resizeMode="contain"
+      style={[styles.logo, { width: dimension, height: dimension, borderRadius: dimension * 0.22 }]}
+      resizeMode="cover"
     />
   );
 };
 
 const styles = StyleSheet.create({
   logo: {
-    // No additional effects - clean and minimal
+    overflow: 'hidden',
   },
 });

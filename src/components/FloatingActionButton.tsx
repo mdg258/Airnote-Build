@@ -14,7 +14,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPr
 
   return (
     <TouchableOpacity
-      style={[styles.fab, { bottom: spacing.xl + insets.bottom, backgroundColor: theme.primaryDark }]}
+      style={[styles.fab, { bottom: 100 + insets.bottom, backgroundColor: theme.primaryDark }]}
       onPress={onPress}
       activeOpacity={0.8}
     >

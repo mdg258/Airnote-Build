@@ -14,6 +14,7 @@ export interface Note {
   createdAt: Date;
   expiresAt: Date;
   duration: Duration;
+  userId: string; // ID of the user who created this note
 }
 
 export interface CreateNoteInput {

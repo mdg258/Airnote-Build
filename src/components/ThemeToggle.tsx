@@ -15,7 +15,7 @@ export const ThemeToggle: React.FC = () => {
     >
       <Ionicons
         name={themeMode === 'light' ? 'moon-outline' : 'sunny-outline'}
-        size={24}
+        size={28}
         color={theme.text.primary}
       />
     </TouchableOpacity>

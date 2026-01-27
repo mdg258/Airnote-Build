@@ -14,8 +14,8 @@ export const LocationChip: React.FC<LocationChipProps> = ({ placeName, hasPermis
 
   return (
     <View style={styles.container}>
-      <View style={[styles.chip, { backgroundColor: theme.primaryLight }]}>
-        <Text style={[styles.text, { color: theme.text.primary }]}>{displayText}</Text>
+      <View style={[styles.chip, { backgroundColor: theme.primaryDark }]}>
+        <Text style={[styles.text, { color: theme.text.inverse }]}>{displayText}</Text>
       </View>
     </View>
   );

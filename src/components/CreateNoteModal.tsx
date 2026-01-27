@@ -60,14 +60,18 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleCancel} />
         <View style={styles.modal}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Create Note</Text>
-              <TouchableOpacity onPress={handleCancel}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Note</Text>
+            <TouchableOpacity onPress={handleCancel}>
+              <Text style={styles.closeButton}>✕</Text>
+            </TouchableOpacity>
+          </View>
 
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.scrollContent}
+            contentContainerStyle={styles.scrollContentContainer}
+          >
             {/* Text Input */}
             <View style={styles.section}>
               <Text style={styles.label}>Message</Text>
@@ -137,16 +141,18 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
                 <Text style={styles.photoButtonText}>📷 Attach Photo (Coming Soon)</Text>
               </TouchableOpacity>
             </View>
+          </ScrollView>
 
-            {/* Post Button */}
+          {/* Post Button - Fixed at bottom */}
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.postButton, text.trim().length === 0 && styles.postButtonDisabled]}
               onPress={handlePost}
               disabled={text.trim().length === 0}
             >
-              <Text style={styles.postButtonText}>Post</Text>
+              <Text style={styles.postButtonText}>Send Note</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -168,8 +174,22 @@ const styles = StyleSheet.create({
     borderTopRightRadius: borderRadius.lg,
     paddingTop: spacing.lg,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
-    maxHeight: '80%',
+    paddingBottom: 0,
+    maxHeight: '85%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    flexShrink: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: spacing.sm,
+  },
+  buttonContainer: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+    backgroundColor: colors.card,
   },
   header: {
     flexDirection: 'row',
@@ -254,7 +274,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     alignItems: 'center',
-    marginTop: spacing.md,
   },
   postButtonDisabled: {
     backgroundColor: colors.text.tertiary,

@@ -7,7 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 interface NoteCardProps {
   note: Note;
-  distance: number;
+  distance?: number;
   timeLeft: number;
 }
 
@@ -21,7 +21,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) 
       shadowColor: theme.shadow,
     }]}>
       <View style={styles.header}>
-        <Text style={[styles.distance, { color: theme.primaryDark }]}>{formatDistance(distance)} away</Text>
+        {distance !== undefined ? (
+          <Text style={[styles.distance, { color: theme.primaryDark }]}>{formatDistance(distance)} away</Text>
+        ) : (
+          <View />
+        )}
         <Text style={[styles.timeLeft, { color: theme.text.secondary }]}>{formatTimeLeft(timeLeft)}</Text>
       </View>
       <Text style={[styles.text, { color: theme.text.primary }]}>{note.text}</Text>
