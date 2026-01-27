@@ -11,12 +11,14 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import MapView, { Circle } from 'react-native-maps';
 import { Duration, Radius } from '../types/note';
 import { spacing, borderRadius, typography } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { getLocationOptions, LocationOption } from '../utils/location';
 import { PlacePickerModal } from './PlacePickerModal';
 import { PlaceWithDistance } from '../services/placesService';
+import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 
 interface CreateNoteModalProps {
   visible: boolean;
@@ -41,7 +43,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   currentLatitude,
   currentLongitude,
 }) => {
-  const { theme } = useTheme();
+  const { theme, themeMode } = useTheme();
   const [text, setText] = useState('');
   const [duration, setDuration] = useState<Duration>('1h');
   const [radius, setRadius] = useState<Radius>(22.86);
@@ -339,6 +341,52 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {/* Radius Preview Map */}
+              {currentLatitude !== null && currentLongitude !== null && selectedLocation ? (
+                <View style={[styles.mapPreview, { borderColor: theme.cardBorder }]}>
+                  <MapView
+                    style={styles.previewMap}
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                    rotateEnabled={false}
+                    pitchEnabled={false}
+                    customMapStyle={themeMode === 'dark' ? darkMapStyle : lightMapStyle}
+                    region={{
+                      latitude: selectedLocation.latitude,
+                      longitude: selectedLocation.longitude,
+                      latitudeDelta: (radius * 4) / 111000, // Convert meters to degrees, show 4x radius
+                      longitudeDelta: (radius * 4) / 111000,
+                    }}
+                  >
+                    <Circle
+                      center={{
+                        latitude: selectedLocation.latitude,
+                        longitude: selectedLocation.longitude,
+                      }}
+                      radius={radius}
+                      fillColor={theme.primaryDark + '30'}
+                      strokeColor={theme.primaryDark}
+                      strokeWidth={2}
+                    />
+                  </MapView>
+                  <View style={[styles.mapOverlay, { backgroundColor: theme.card + 'DD' }]}>
+                    <Text style={[styles.mapOverlayText, { color: theme.text.secondary }]}>
+                      Your note will reach {Math.round(radius * 3.28084)} ft from this location
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={[styles.mapPlaceholder, { backgroundColor: theme.background, borderColor: theme.cardBorder }]}>
+                  <Text style={[styles.mapPlaceholderIcon, { color: theme.text.tertiary }]}>📍</Text>
+                  <Text style={[styles.mapPlaceholderText, { color: theme.text.secondary }]}>
+                    Location preview unavailable
+                  </Text>
+                  <Text style={[styles.mapPlaceholderSubtext, { color: theme.text.tertiary }]}>
+                    Enable location access to see radius preview
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Photo Placeholder */}
@@ -596,5 +644,54 @@ const styles = StyleSheet.create({
   },
   toggleOptionsText: {
     fontSize: 13,
+  },
+  mapPreview: {
+    height: 180,
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+    marginTop: spacing.md,
+    borderWidth: 1,
+    position: 'relative',
+  },
+  previewMap: {
+    width: '100%',
+    height: '100%',
+  },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.sm,
+    alignItems: 'center',
+  },
+  mapOverlayText: {
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  mapPlaceholder: {
+    height: 180,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+  },
+  mapPlaceholderIcon: {
+    fontSize: 48,
+    marginBottom: spacing.sm,
+    opacity: 0.5,
+  },
+  mapPlaceholderText: {
+    fontSize: 15,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  mapPlaceholderSubtext: {
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
