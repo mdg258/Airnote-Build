@@ -1,3 +1,5 @@
+import * as Location from 'expo-location';
+
 /**
  * Calculate distance between two coordinates using Haversine formula
  * Returns distance in meters
@@ -70,10 +72,8 @@ export const getLocationOptions = async (
   latitude: number,
   longitude: number
 ): Promise<LocationOption[]> => {
-  const Location = await import('expo-location');
-
   try {
-    const results = await Location.default.reverseGeocodeAsync({
+    const results = await Location.reverseGeocodeAsync({
       latitude,
       longitude,
     });

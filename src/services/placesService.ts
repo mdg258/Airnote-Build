@@ -14,48 +14,145 @@ export interface PlaceWithDistance extends Place {
   distance: number;
 }
 
-// Mock places data - in production, this would come from Google Places, Mapbox, etc.
-const MOCK_PLACES: Place[] = [
-  // Coffee shops
-  { id: 'p1', name: 'Blue Bottle Coffee', address: '66 Mint St', neighborhood: 'SoMa', latitude: 37.7858, longitude: -122.3964, category: 'Coffee Shop' },
-  { id: 'p2', name: 'Philz Coffee', address: '201 Berry St', neighborhood: 'Mission Bay', latitude: 37.7764, longitude: -122.3926, category: 'Coffee Shop' },
-  { id: 'p3', name: 'Sightglass Coffee', address: '270 7th St', neighborhood: 'SoMa', latitude: 37.7766, longitude: -122.4072, category: 'Coffee Shop' },
+// Nominatim API configuration
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
+const USER_AGENT = 'AirnoteMVP/0.1 (contact: support@airnote.app)';
 
-  // Restaurants
-  { id: 'p4', name: 'The Slanted Door', address: 'Ferry Building', neighborhood: 'Embarcadero', latitude: 37.7955, longitude: -122.3937, category: 'Restaurant' },
-  { id: 'p5', name: 'State Bird Provisions', address: '1529 Fillmore St', neighborhood: 'Western Addition', latitude: 37.7844, longitude: -122.4329, category: 'Restaurant' },
-  { id: 'p6', name: 'Tartine Bakery', address: '600 Guerrero St', neighborhood: 'Mission', latitude: 37.7611, longitude: -122.4242, category: 'Bakery' },
+// Cache for search results
+const searchCache = new Map<string, { timestamp: number; results: PlaceWithDistance[] }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  // Bars
-  { id: 'p7', name: 'Bourbon & Branch', address: '501 Jones St', neighborhood: 'Tenderloin', latitude: 37.7849, longitude: -122.4125, category: 'Bar' },
-  { id: 'p8', name: 'Trick Dog', address: '3010 20th St', neighborhood: 'Mission', latitude: 37.7589, longitude: -122.4122, category: 'Bar' },
-  { id: 'p9', name: 'The Interval', address: '2 Marina Blvd', neighborhood: 'Fort Mason', latitude: 37.8065, longitude: -122.4319, category: 'Bar' },
+// In-flight requests tracking
+const inFlightRequests = new Map<string, Promise<PlaceWithDistance[]>>();
 
-  // Parks
-  { id: 'p10', name: 'Dolores Park', address: 'Dolores St & 19th St', neighborhood: 'Mission', latitude: 37.7596, longitude: -122.4269, category: 'Park' },
-  { id: 'p11', name: 'Golden Gate Park', address: 'Golden Gate Park', neighborhood: 'Richmond', latitude: 37.7694, longitude: -122.4862, category: 'Park' },
-  { id: 'p12', name: 'Alamo Square', address: 'Hayes St & Steiner St', neighborhood: 'Western Addition', latitude: 37.7766, longitude: -122.4343, category: 'Park' },
+// Debounce timers
+const debounceTimers = new Map<string, NodeJS.Timeout>();
 
-  // Gyms
-  { id: 'p13', name: 'Equinox', address: '2 Embarcadero Center', neighborhood: 'Financial District', latitude: 37.7946, longitude: -122.3975, category: 'Gym' },
-  { id: 'p14', name: 'Barry\'s Bootcamp', address: '2125 Fillmore St', neighborhood: 'Pacific Heights', latitude: 37.7914, longitude: -122.4336, category: 'Gym' },
+/**
+ * Calculate bounding box around a point with given radius in meters
+ */
+const calculateBoundingBox = (lat: number, lon: number, radiusMeters: number) => {
+  // Rough conversion: 1 degree latitude ≈ 111km
+  const latDelta = (radiusMeters / 111000);
+  // Longitude degrees vary with latitude
+  const lonDelta = (radiusMeters / (111000 * Math.cos(lat * Math.PI / 180)));
 
-  // Museums
-  { id: 'p15', name: 'SFMOMA', address: '151 3rd St', neighborhood: 'SoMa', latitude: 37.7857, longitude: -122.4011, category: 'Museum' },
-  { id: 'p16', name: 'de Young Museum', address: 'Golden Gate Park', neighborhood: 'Golden Gate Park', latitude: 37.7715, longitude: -122.4686, category: 'Museum' },
+  return {
+    left: lon - lonDelta,
+    bottom: lat - latDelta,
+    right: lon + lonDelta,
+    top: lat + latDelta,
+  };
+};
 
-  // Shopping
-  { id: 'p17', name: 'Westfield San Francisco Centre', address: '865 Market St', neighborhood: 'Downtown', latitude: 37.7844, longitude: -122.4068, category: 'Shopping' },
-  { id: 'p18', name: 'Union Square', address: 'Geary St & Stockton St', neighborhood: 'Union Square', latitude: 37.7879, longitude: -122.4074, category: 'Shopping' },
+/**
+ * Format address from Nominatim result
+ */
+const formatAddress = (result: any): string | undefined => {
+  const address = result.address;
+  if (!address) return result.display_name;
 
-  // Hotels
-  { id: 'p19', name: 'The Fairmont', address: '950 Mason St', neighborhood: 'Nob Hill', latitude: 37.7926, longitude: -122.4107, category: 'Hotel' },
-  { id: 'p20', name: 'Palace Hotel', address: '2 New Montgomery St', neighborhood: 'SoMa', latitude: 37.7882, longitude: -122.4013, category: 'Hotel' },
-];
+  const parts: string[] = [];
+
+  if (address.house_number && address.road) {
+    parts.push(`${address.house_number} ${address.road}`);
+  } else if (address.road) {
+    parts.push(address.road);
+  }
+
+  if (address.neighbourhood || address.suburb) {
+    parts.push(address.neighbourhood || address.suburb);
+  }
+
+  return parts.length > 0 ? parts.join(', ') : result.display_name;
+};
+
+/**
+ * Get category from Nominatim type/class
+ */
+const getCategory = (type: string, placeClass: string): string | undefined => {
+  const categoryMap: Record<string, string> = {
+    'cafe': 'Coffee Shop',
+    'restaurant': 'Restaurant',
+    'fast_food': 'Fast Food',
+    'bar': 'Bar',
+    'pub': 'Bar',
+    'park': 'Park',
+    'gym': 'Gym',
+    'library': 'Library',
+    'hospital': 'Hospital',
+    'pharmacy': 'Pharmacy',
+    'supermarket': 'Supermarket',
+    'convenience': 'Convenience Store',
+    'bakery': 'Bakery',
+    'fuel': 'Gas Station',
+    'parking': 'Parking',
+  };
+
+  return categoryMap[type] || categoryMap[placeClass];
+};
+
+/**
+ * Normalize Nominatim result to our Place interface
+ */
+const normalizePlace = (result: any, userLat: number, userLon: number): PlaceWithDistance => {
+  const lat = parseFloat(result.lat);
+  const lon = parseFloat(result.lon);
+  const distance = calculateDistance(userLat, userLon, lat, lon);
+
+  return {
+    id: result.place_id?.toString() || result.osm_id?.toString() || Math.random().toString(),
+    name: result.name || result.display_name.split(',')[0],
+    address: formatAddress(result),
+    neighborhood: result.address?.neighbourhood || result.address?.suburb,
+    latitude: lat,
+    longitude: lon,
+    category: getCategory(result.type, result.class),
+    distance,
+  };
+};
+
+/**
+ * Fetch places from Nominatim
+ */
+const fetchFromNominatim = async (
+  params: URLSearchParams,
+  userLat: number,
+  userLon: number
+): Promise<PlaceWithDistance[]> => {
+  const url = `${NOMINATIM_BASE_URL}/search?${params.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': USER_AGENT,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Nominatim API error:', response.status);
+      return [];
+    }
+
+    const results = await response.json();
+
+    if (!Array.isArray(results)) {
+      return [];
+    }
+
+    return results
+      .map((result: any) => normalizePlace(result, userLat, userLon))
+      .filter((place: PlaceWithDistance) => place.name && place.name.length > 0)
+      .slice(0, 20);
+  } catch (error) {
+    console.error('Failed to fetch from Nominatim:', error);
+    return [];
+  }
+};
 
 /**
  * Places Service Interface
- * This abstraction allows swapping providers (Google Places, Mapbox, etc.) easily
+ * Uses OpenStreetMap Nominatim (free, no API key required)
  */
 export const placesService = {
   /**
@@ -66,41 +163,62 @@ export const placesService = {
     userLatitude: number,
     userLongitude: number
   ): Promise<PlaceWithDistance[]> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const searchTerm = query.trim();
+    if (searchTerm.length < 2) return [];
 
-    // Filter places by query (case-insensitive search in name, address, neighborhood)
-    const searchTerm = query.toLowerCase().trim();
-    const filtered = MOCK_PLACES.filter(place => {
-      return (
-        place.name.toLowerCase().includes(searchTerm) ||
-        place.address?.toLowerCase().includes(searchTerm) ||
-        place.neighborhood?.toLowerCase().includes(searchTerm) ||
-        place.category?.toLowerCase().includes(searchTerm)
-      );
+    const cacheKey = `search:${searchTerm}:${userLatitude.toFixed(3)},${userLongitude.toFixed(3)}`;
+
+    // Check cache
+    const cached = searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.results;
+    }
+
+    // Check if request is already in flight
+    const inFlight = inFlightRequests.get(cacheKey);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    // Clear existing debounce timer
+    const existingTimer = debounceTimers.get(cacheKey);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    // Create debounced request
+    const request = new Promise<PlaceWithDistance[]>((resolve) => {
+      const timer = setTimeout(async () => {
+        debounceTimers.delete(cacheKey);
+
+        const bbox = calculateBoundingBox(userLatitude, userLongitude, 5000); // 5km search radius
+
+        const params = new URLSearchParams({
+          q: searchTerm,
+          format: 'json',
+          addressdetails: '1',
+          limit: '20',
+          bounded: '1',
+          viewbox: `${bbox.left},${bbox.top},${bbox.right},${bbox.bottom}`,
+        });
+
+        const results = await fetchFromNominatim(params, userLatitude, userLongitude);
+
+        // Cache results
+        searchCache.set(cacheKey, {
+          timestamp: Date.now(),
+          results,
+        });
+
+        inFlightRequests.delete(cacheKey);
+        resolve(results);
+      }, 400); // 400ms debounce
+
+      debounceTimers.set(cacheKey, timer);
     });
 
-    // Calculate distances and sort by distance
-    const withDistance = filtered.map(place => {
-      const distance = calculateDistance(
-        userLatitude,
-        userLongitude,
-        place.latitude,
-        place.longitude
-      );
-      return { ...place, distance };
-    });
-
-    // Sort by relevance (exact matches first) then by distance
-    return withDistance.sort((a, b) => {
-      const aExactMatch = a.name.toLowerCase().startsWith(searchTerm);
-      const bExactMatch = b.name.toLowerCase().startsWith(searchTerm);
-
-      if (aExactMatch && !bExactMatch) return -1;
-      if (!aExactMatch && bExactMatch) return 1;
-
-      return a.distance - b.distance;
-    });
+    inFlightRequests.set(cacheKey, request);
+    return request;
   },
 
   /**
@@ -109,25 +227,83 @@ export const placesService = {
   nearbyPlaces: async (
     userLatitude: number,
     userLongitude: number,
-    radiusMeters: number = 2000 // Default 2km radius
+    radiusMeters: number = 2000
   ): Promise<PlaceWithDistance[]> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const cacheKey = `nearby:${userLatitude.toFixed(3)},${userLongitude.toFixed(3)}:${radiusMeters}`;
 
-    // Calculate distances for all places
-    const withDistance = MOCK_PLACES.map(place => {
-      const distance = calculateDistance(
-        userLatitude,
-        userLongitude,
-        place.latitude,
-        place.longitude
-      );
-      return { ...place, distance };
-    });
+    // Check cache
+    const cached = searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.results;
+    }
 
-    // Filter by radius and sort by distance
-    return withDistance
-      .filter(place => place.distance <= radiusMeters)
-      .sort((a, b) => a.distance - b.distance);
+    // Check if request is already in flight
+    const inFlight = inFlightRequests.get(cacheKey);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const request = (async () => {
+      const bbox = calculateBoundingBox(userLatitude, userLongitude, radiusMeters);
+
+      // High-signal, situational amenity types for MVP
+      const amenityTypes = [
+        'restaurant', 'cafe', 'bar', 'park',
+        'gym', 'pharmacy', 'supermarket', 'bakery'
+      ];
+
+      const allPlaces = new Map<string, PlaceWithDistance>();
+
+      // Fetch amenity types in batches to respect rate limits (max 1 req/sec)
+      const batchSize = 2;
+      for (let i = 0; i < amenityTypes.length; i += batchSize) {
+        const batch = amenityTypes.slice(i, i + batchSize);
+
+        // Fetch batch in parallel
+        const batchPromises = batch.map(async (amenity) => {
+          const params = new URLSearchParams({
+            q: amenity,
+            format: 'json',
+            addressdetails: '1',
+            limit: '10',
+            bounded: '1',
+            viewbox: `${bbox.left},${bbox.top},${bbox.right},${bbox.bottom}`,
+          });
+
+          return fetchFromNominatim(params, userLatitude, userLongitude);
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+
+        // Add batch results to map
+        batchResults.flat().forEach(place => {
+          if (!allPlaces.has(place.id) && place.distance <= radiusMeters) {
+            allPlaces.set(place.id, place);
+          }
+        });
+
+        // Wait 1 second between batches to respect rate limits
+        if (i + batchSize < amenityTypes.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Convert map to array, sort by distance, and limit results
+      const results = Array.from(allPlaces.values())
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 20);
+
+      // Cache results
+      searchCache.set(cacheKey, {
+        timestamp: Date.now(),
+        results,
+      });
+
+      inFlightRequests.delete(cacheKey);
+      return results;
+    })();
+
+    inFlightRequests.set(cacheKey, request);
+    return request;
   },
 };
