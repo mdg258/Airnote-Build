@@ -37,6 +37,8 @@ export const notesService = {
       text: input.text,
       location: input.location,
       placeName: input.placeName,
+      placeAddress: input.placeAddress,
+      placeId: input.placeId,
       radius: input.radius,
       createdAt: now,
       expiresAt,

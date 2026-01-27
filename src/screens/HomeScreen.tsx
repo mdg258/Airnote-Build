@@ -48,14 +48,26 @@ export const HomeScreen: React.FC = () => {
     setNearbyNotes(notes);
   };
 
-  const handleCreateNote = (text: string, duration: Duration, radius: Radius) => {
-    if (!location.latitude || !location.longitude) return;
+  const handleCreateNote = (
+    text: string,
+    duration: Duration,
+    radius: Radius,
+    locationOption: {
+      id: string;
+      name: string;
+      description?: string;
+      latitude: number;
+      longitude: number;
+    }
+  ) => {
     notesService.createNote({
       text,
       duration,
       radius,
-      location: { latitude: location.latitude, longitude: location.longitude },
-      placeName: location.placeName || undefined,
+      location: { latitude: locationOption.latitude, longitude: locationOption.longitude },
+      placeName: locationOption.name,
+      placeAddress: locationOption.description,
+      placeId: locationOption.id,
     });
     setRefreshKey((prev) => prev + 1);
   };
@@ -104,6 +116,8 @@ export const HomeScreen: React.FC = () => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onCreate={handleCreateNote}
+        currentLatitude={location.latitude}
+        currentLongitude={location.longitude}
       />
     </SafeAreaView>
   );

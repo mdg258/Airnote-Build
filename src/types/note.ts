@@ -10,7 +10,9 @@ export interface Note {
   id: string;
   text: string;
   location: Location;
-  placeName?: string; // Human-readable location name (e.g., "SoMa, San Francisco")
+  placeName?: string; // Human-readable location name (e.g., "SoMa, San Francisco" or "Blue Bottle Coffee")
+  placeAddress?: string; // Optional street address
+  placeId?: string; // Optional place ID from provider (Google, Mapbox, etc.)
   radius: Radius; // in meters
   createdAt: Date;
   expiresAt: Date;
@@ -22,6 +24,8 @@ export interface CreateNoteInput {
   text: string;
   location: Location;
   placeName?: string;
+  placeAddress?: string;
+  placeId?: string;
   radius: Radius;
   duration: Duration;
 }

@@ -39,7 +39,7 @@ export const ProfileScreen: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Profile</Text>
+        <Text style={[styles.title, { color: theme.text.primary }]}>My Notes</Text>
       </View>
       <FlatList
         data={userNotes}

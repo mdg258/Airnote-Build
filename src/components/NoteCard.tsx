@@ -23,9 +23,16 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, sh
     }]}>
       <View style={styles.header}>
         {showLocation ? (
-          <Text style={[styles.location, { color: theme.text.secondary }]}>
-            📍 {note.placeName || 'Unknown location'}
-          </Text>
+          <View style={{ flex: 1, marginRight: spacing.sm }}>
+            <Text style={[styles.location, { color: theme.text.secondary }]}>
+              📍 {note.placeName || 'Unknown location'}
+            </Text>
+            {note.placeAddress && (
+              <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
+                {note.placeAddress}
+              </Text>
+            )}
+          </View>
         ) : distance !== undefined ? (
           <Text style={[styles.distance, { color: theme.primaryDark }]}>{formatDistance(distance)} away</Text>
         ) : (
@@ -68,6 +75,11 @@ const styles = StyleSheet.create({
   location: {
     ...typography.small,
     fontWeight: '500',
+  },
+  placeAddress: {
+    ...typography.small,
+    fontSize: 11,
+    marginTop: 2,
   },
   timeLeft: {
     ...typography.small,

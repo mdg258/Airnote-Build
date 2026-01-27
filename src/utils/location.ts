@@ -54,3 +54,99 @@ export const formatTimeLeft = (milliseconds: number): string => {
   }
   return '<1m left';
 };
+
+export interface LocationOption {
+  id: string;
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * Get detailed location options from reverse geocoding
+ */
+export const getLocationOptions = async (
+  latitude: number,
+  longitude: number
+): Promise<LocationOption[]> => {
+  const Location = await import('expo-location');
+
+  try {
+    const results = await Location.default.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
+
+    if (results.length === 0) {
+      return [{
+        id: 'current',
+        name: 'Current Location',
+        latitude,
+        longitude,
+      }];
+    }
+
+    const place = results[0];
+    const options: LocationOption[] = [];
+
+    // Option 1: Specific address (if available)
+    if (place.name || place.street) {
+      const addressParts = [place.name, place.street].filter(Boolean);
+      if (addressParts.length > 0) {
+        options.push({
+          id: 'address',
+          name: addressParts.join(', '),
+          description: [place.subregion, place.city].filter(Boolean).join(', '),
+          latitude,
+          longitude,
+        });
+      }
+    }
+
+    // Option 2: Neighborhood/District level
+    if (place.subregion && place.city) {
+      options.push({
+        id: 'neighborhood',
+        name: `${place.subregion}, ${place.city}`,
+        description: 'Neighborhood area',
+        latitude,
+        longitude,
+      });
+    } else if (place.city) {
+      options.push({
+        id: 'city',
+        name: place.city,
+        description: place.region || 'City area',
+        latitude,
+        longitude,
+      });
+    }
+
+    // Option 3: General area
+    options.push({
+      id: 'general',
+      name: 'General Area',
+      description: [place.subregion, place.city, place.region]
+        .filter(Boolean)
+        .join(', '),
+      latitude,
+      longitude,
+    });
+
+    return options.length > 0 ? options : [{
+      id: 'current',
+      name: 'Current Location',
+      latitude,
+      longitude,
+    }];
+  } catch (error) {
+    console.error('Failed to get location options:', error);
+    return [{
+      id: 'current',
+      name: 'Current Location',
+      latitude,
+      longitude,
+    }];
+  }
+};
