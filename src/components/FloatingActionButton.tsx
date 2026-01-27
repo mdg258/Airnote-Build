@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, typography } from '../theme/colors';
 
 interface FloatingActionButtonProps {
@@ -7,8 +8,14 @@ interface FloatingActionButtonProps {
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPress }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[styles.fab, { bottom: spacing.xl + insets.bottom }]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
       <Text style={styles.text}>Create Note</Text>
     </TouchableOpacity>
   );
