@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Note } from '../types/note';
 import { formatDistance, formatTimeLeft } from '../utils/location';
-import { colors, spacing, borderRadius, typography } from '../theme/colors';
+import { spacing, borderRadius, typography } from '../theme/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface NoteCardProps {
   note: Note;
@@ -11,15 +12,21 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) => {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, {
+      backgroundColor: theme.card,
+      borderColor: theme.cardBorder,
+      shadowColor: theme.shadow,
+    }]}>
       <View style={styles.header}>
-        <Text style={styles.distance}>{formatDistance(distance)} away</Text>
-        <Text style={styles.timeLeft}>{formatTimeLeft(timeLeft)}</Text>
+        <Text style={[styles.distance, { color: theme.primaryDark }]}>{formatDistance(distance)} away</Text>
+        <Text style={[styles.timeLeft, { color: theme.text.secondary }]}>{formatTimeLeft(timeLeft)}</Text>
       </View>
-      <Text style={styles.text}>{note.text}</Text>
+      <Text style={[styles.text, { color: theme.text.primary }]}>{note.text}</Text>
       <View style={styles.footer}>
-        <Text style={styles.metadata}>Radius: {note.radius}m</Text>
+        <Text style={[styles.metadata, { color: theme.text.tertiary }]}>Radius: {note.radius}m</Text>
       </View>
     </View>
   );
@@ -27,18 +34,15 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft }) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   header: {
     flexDirection: 'row',
@@ -48,16 +52,13 @@ const styles = StyleSheet.create({
   },
   distance: {
     ...typography.small,
-    color: colors.primaryDark,
     fontWeight: '600',
   },
   timeLeft: {
     ...typography.small,
-    color: colors.text.secondary,
   },
   text: {
     ...typography.body,
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   footer: {
@@ -66,6 +67,5 @@ const styles = StyleSheet.create({
   },
   metadata: {
     ...typography.small,
-    color: colors.text.tertiary,
   },
 });

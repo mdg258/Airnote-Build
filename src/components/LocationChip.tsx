@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../theme/colors';
+import { spacing, borderRadius, typography } from '../theme/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LocationChipProps {
   placeName: string | null;
@@ -8,12 +9,13 @@ interface LocationChipProps {
 }
 
 export const LocationChip: React.FC<LocationChipProps> = ({ placeName, hasPermission }) => {
+  const { theme } = useTheme();
   const displayText = hasPermission && placeName ? `Here · ${placeName}` : 'Here · Location Off';
 
   return (
     <View style={styles.container}>
-      <View style={styles.chip}>
-        <Text style={styles.text}>{displayText}</Text>
+      <View style={[styles.chip, { backgroundColor: theme.primaryLight }]}>
+        <Text style={[styles.text, { color: theme.text.primary }]}>{displayText}</Text>
       </View>
     </View>
   );
@@ -25,7 +27,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   chip: {
-    backgroundColor: colors.primaryLight,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
@@ -33,7 +34,6 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typography.caption,
-    color: colors.text.primary,
     fontWeight: '500',
   },
 });
