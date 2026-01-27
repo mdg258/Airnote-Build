@@ -90,27 +90,41 @@ export const PlacePickerModal: React.FC<PlacePickerModalProps> = ({
     onClose();
   };
 
-  const renderPlace = ({ item }: { item: PlaceWithDistance }) => (
-    <TouchableOpacity
-      style={[styles.placeItem, { borderBottomColor: theme.cardBorder }]}
-      onPress={() => handleSelectPlace(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.placeIconContainer}>
-        <Text style={styles.placeIcon}>📍</Text>
-      </View>
-      <View style={styles.placeInfo}>
-        <Text style={[styles.placeName, { color: theme.text.primary }]}>{item.name}</Text>
-        <Text style={[styles.placeDetails, { color: theme.text.secondary }]}>
-          {item.address || item.neighborhood}
-          {item.category && ` · ${item.category}`}
+  const renderPlace = ({ item }: { item: PlaceWithDistance }) => {
+    const isTooFar = item.distance > 100; // 100 meters
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.placeItem,
+          { borderBottomColor: theme.cardBorder },
+          isTooFar && { opacity: 0.5 },
+        ]}
+        onPress={() => handleSelectPlace(item)}
+        activeOpacity={0.7}
+        disabled={isTooFar}
+      >
+        <View style={styles.placeIconContainer}>
+          <Text style={styles.placeIcon}>📍</Text>
+        </View>
+        <View style={styles.placeInfo}>
+          <Text style={[styles.placeName, { color: theme.text.primary }]}>{item.name}</Text>
+          <Text style={[styles.placeDetails, { color: theme.text.secondary }]}>
+            {item.address || item.neighborhood}
+            {item.category && ` · ${item.category}`}
+          </Text>
+          {isTooFar && (
+            <Text style={[styles.tooFarMessage, { color: theme.text.tertiary }]}>
+              Move closer to tag this place
+            </Text>
+          )}
+        </View>
+        <Text style={[styles.placeDistance, { color: theme.text.tertiary }]}>
+          {formatDistance(item.distance)}
         </Text>
-      </View>
-      <Text style={[styles.placeDistance, { color: theme.text.tertiary }]}>
-        {formatDistance(item.distance)}
-      </Text>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderHeader = () => (
     <View style={styles.listHeader}>
@@ -290,6 +304,11 @@ const styles = StyleSheet.create({
   },
   placeDetails: {
     fontSize: 14,
+  },
+  tooFarMessage: {
+    fontSize: 12,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   placeDistance: {
     fontSize: 13,

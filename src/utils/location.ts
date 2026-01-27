@@ -169,17 +169,18 @@ export const groupNotesByPlace = (
 
   nearbyNotes.forEach((note) => {
     // Generate a unique key for grouping
-    // Priority: placeId > placeName > rounded coordinates
+    // Priority: placeId > placeName + coordinates > coordinates only
     let groupKey: string;
     let placeName: string;
     let placeAddress: string | undefined;
 
     if (note.placeId) {
+      // Group purely by placeId - all notes tagged with same place
       groupKey = note.placeId;
       placeName = note.placeName || 'Unknown Place';
       placeAddress = note.placeAddress;
     } else if (note.placeName) {
-      // Use placeName as key, but also include approximate coordinates to avoid collisions
+      // For notes without placeId, group by placeName + approximate coordinates
       const roundedLat = note.location.latitude.toFixed(4);
       const roundedLon = note.location.longitude.toFixed(4);
       groupKey = `${note.placeName}-${roundedLat},${roundedLon}`;
@@ -199,6 +200,7 @@ export const groupNotesByPlace = (
       existing.notes.push(note);
       existing.noteCount += 1;
       existing.closestDistance = Math.min(existing.closestDistance, note.distance);
+      // Update to centroid (will recalculate after loop)
     } else {
       placeMap.set(groupKey, {
         placeId: groupKey,
@@ -210,6 +212,16 @@ export const groupNotesByPlace = (
         noteCount: 1,
         closestDistance: note.distance,
       });
+    }
+  });
+
+  // Calculate centroid for groups with multiple notes
+  placeMap.forEach((group) => {
+    if (group.notes.length > 1) {
+      const avgLat = group.notes.reduce((sum, note) => sum + note.location.latitude, 0) / group.notes.length;
+      const avgLon = group.notes.reduce((sum, note) => sum + note.location.longitude, 0) / group.notes.length;
+      group.latitude = avgLat;
+      group.longitude = avgLon;
     }
   });
 

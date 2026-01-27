@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -19,6 +19,7 @@ import { PlaceNotesModal } from '../components/PlaceNotesModal';
 export const MapScreen: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation();
+  const mapRef = useRef<MapView>(null);
   const [selectedPlace, setSelectedPlace] = useState<PlaceGroup | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [nearbyNotes, setNearbyNotes] = useState<
@@ -59,6 +60,23 @@ export const MapScreen: React.FC = () => {
     if (!location.latitude || !location.longitude) return null;
     return getMapRegion(location.latitude, location.longitude, 1);
   }, [location.latitude, location.longitude]);
+
+  // Fit map to show all markers
+  useEffect(() => {
+    if (placeGroups.length > 0 && mapRef.current && location.latitude && location.longitude) {
+      const coordinates = [
+        { latitude: location.latitude, longitude: location.longitude },
+        ...placeGroups.map(g => ({ latitude: g.latitude, longitude: g.longitude }))
+      ];
+
+      setTimeout(() => {
+        mapRef.current?.fitToCoordinates(coordinates, {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        });
+      }, 100);
+    }
+  }, [placeGroups, location.latitude, location.longitude]);
 
   // Handle marker press
   const handleMarkerPress = useCallback((place: PlaceGroup) => {
@@ -134,6 +152,7 @@ export const MapScreen: React.FC = () => {
 
       <View style={styles.mapContainer}>
         <MapView
+          ref={mapRef}
           style={styles.map}
           initialRegion={mapRegion}
           showsUserLocation={true}

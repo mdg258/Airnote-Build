@@ -74,13 +74,20 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   };
 
   const handleSelectPlace = (place: PlaceWithDistance) => {
+    // Validate place is within 100m
+    if (place.distance > 100) {
+      return;
+    }
+
     setSelectedPlace(place);
+    // Store place info as metadata ONLY (not coordinates)
+    // IMPORTANT: Use user's current coordinates, not place coordinates
     setSelectedLocation({
       id: place.id,
       name: place.name,
       description: place.address || place.neighborhood,
-      latitude: place.latitude,
-      longitude: place.longitude,
+      latitude: currentLatitude!,
+      longitude: currentLongitude!,
     });
   };
 
