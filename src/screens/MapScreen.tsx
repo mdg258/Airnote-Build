@@ -51,7 +51,7 @@ export const MapScreen: React.FC = () => {
   const refreshNotes = () => {
     if (!location.latitude || !location.longitude) return;
     notesService.purgeExpiredNotes();
-    const notes = notesService.getNearbyNotes(location.latitude, location.longitude);
+    const notes = notesService.getAllNotesWithinDistance(location.latitude, location.longitude, 1609);
     setNearbyNotes(notes);
   };
 

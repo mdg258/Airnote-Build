@@ -98,6 +98,55 @@ export const notesService = {
   },
 
   /**
+   * Get all notes within a certain distance from a location (for map view)
+   * Filters by:
+   * - Distance from user location must be <= maxDistance
+   * - Note must not be expired
+   * Does NOT filter by note's individual radius (unlike getNearbyNotes)
+   */
+  getAllNotesWithinDistance: (
+    userLatitude: number,
+    userLongitude: number,
+    maxDistance: number = 1609 // Default 1 mile in meters
+  ): Array<Note & { distance: number; timeLeft: number }> => {
+    const now = new Date();
+
+    return notes
+      .filter((note) => {
+        // Remove expired notes
+        if (now > note.expiresAt) return false;
+
+        // Calculate distance from user to note
+        const distance = calculateDistance(
+          userLatitude,
+          userLongitude,
+          note.location.latitude,
+          note.location.longitude
+        );
+
+        // Show all notes within maxDistance, regardless of note's radius
+        return distance <= maxDistance;
+      })
+      .map((note) => {
+        const distance = calculateDistance(
+          userLatitude,
+          userLongitude,
+          note.location.latitude,
+          note.location.longitude
+        );
+
+        const timeLeft = note.expiresAt.getTime() - now.getTime();
+
+        return {
+          ...note,
+          distance,
+          timeLeft,
+        };
+      })
+      .sort((a, b) => a.distance - b.distance); // Sort by closest first
+  },
+
+  /**
    * Get notes created by the current user
    * Filters out expired notes
    */

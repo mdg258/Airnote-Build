@@ -91,7 +91,7 @@ export const PlacePickerModal: React.FC<PlacePickerModalProps> = ({
   };
 
   const renderPlace = ({ item }: { item: PlaceWithDistance }) => {
-    const isTooFar = item.distance > 100; // 100 meters
+    const isTooFar = item.distance > 1609; // 1 mile in meters
 
     return (
       <TouchableOpacity
