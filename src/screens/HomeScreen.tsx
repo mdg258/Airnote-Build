@@ -5,6 +5,7 @@ import {
   FlatList,
   Text,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
@@ -16,7 +17,7 @@ import { PlaceGroupCard } from '../components/PlaceGroupCard';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
 import { Duration, Radius, Note, PlaceGroup } from '../types/note';
-import { spacing, typography } from '../theme/colors';
+import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { groupNotesByPlace } from '../utils/location';
 
@@ -28,6 +29,8 @@ export const HomeScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [radius, setRadius] = useState<91 | 1609>(91); // 300 ft or 1 mile
+  const [sortMode, setSortMode] = useState<'closest' | 'ending-soon'>('closest');
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -35,24 +38,46 @@ export const HomeScreen: React.FC = () => {
       refreshNotes();
     }, 10000);
     return () => clearInterval(interval);
-  }, [location.latitude, location.longitude]);
+  }, [location.latitude, location.longitude, radius]);
 
   useEffect(() => {
     if (location.latitude && location.longitude) {
       refreshNotes();
     }
-  }, [location.latitude, location.longitude, refreshKey]);
+  }, [location.latitude, location.longitude, refreshKey, radius]);
 
   const refreshNotes = () => {
     if (!location.latitude || !location.longitude) return;
     notesService.purgeExpiredNotes();
-    const notes = notesService.getAllNotesWithinDistance(location.latitude, location.longitude, 1609);
+    const notes = notesService.getAllNotesWithinDistance(location.latitude, location.longitude, radius);
     setNearbyNotes(notes);
   };
 
   const placeGroups = useMemo(() => {
-    return groupNotesByPlace(nearbyNotes, 1609);
-  }, [nearbyNotes]);
+    const groups = groupNotesByPlace(nearbyNotes, radius);
+
+    // Sort groups based on selected mode
+    if (sortMode === 'ending-soon') {
+      // Sort by soonest expiration (shortest time left)
+      return groups.sort((a, b) => {
+        const aMinTime = Math.min(...a.notes.map(n => n.timeLeft));
+        const bMinTime = Math.min(...b.notes.map(n => n.timeLeft));
+        return aMinTime - bMinTime;
+      });
+    } else {
+      // Sort by closest distance (with slight boost for expiring soon)
+      return groups.sort((a, b) => {
+        const aMinTime = Math.min(...a.notes.map(n => n.timeLeft));
+        const bMinTime = Math.min(...b.notes.map(n => n.timeLeft));
+
+        // Boost score if expiring within 1 hour (3600000ms)
+        const aBoost = aMinTime < 3600000 ? -50 : 0; // Subtract 50m from distance
+        const bBoost = bMinTime < 3600000 ? -50 : 0;
+
+        return (a.closestDistance + aBoost) - (b.closestDistance + bBoost);
+      });
+    }
+  }, [nearbyNotes, radius, sortMode]);
 
   const handleCreateNote = (
     text: string,
@@ -78,6 +103,44 @@ export const HomeScreen: React.FC = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const renderFilterChips = () => (
+    <View style={styles.filterContainer}>
+      <TouchableOpacity
+        style={[styles.chip, { backgroundColor: theme.background, borderColor: theme.primaryDark }]}
+        onPress={() => setRadius(radius === 91 ? 1609 : 91)}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.chipText, { color: theme.text.primary }]}>
+          {radius === 91 ? 'Here · 300 ft' : 'Nearby · 1 mi'}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.chip,
+          {
+            backgroundColor: sortMode === 'closest' ? theme.primaryDark : theme.background,
+            borderColor: theme.primaryDark,
+          },
+        ]}
+        onPress={() => setSortMode(sortMode === 'closest' ? 'ending-soon' : 'closest')}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.chipText,
+            {
+              color: sortMode === 'closest' ? '#FFFFFF' : theme.text.primary,
+              fontWeight: sortMode === 'closest' ? '600' : '400',
+            },
+          ]}
+        >
+          {sortMode === 'closest' ? 'Closest' : 'Ending Soon'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderEmptyState = () => {
     if (location.isLoading) {
       return (
@@ -99,7 +162,9 @@ export const HomeScreen: React.FC = () => {
       <View style={styles.emptyState}>
         <Text style={styles.emptyIcon}>📍</Text>
         <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No notes nearby</Text>
-        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>Notes within 1 mile will appear here</Text>
+        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>
+          Notes within {radius === 91 ? '300 feet' : '1 mile'} will appear here
+        </Text>
       </View>
     );
   };
@@ -113,6 +178,7 @@ export const HomeScreen: React.FC = () => {
         keyExtractor={(item) => item.placeId}
         renderItem={({ item }) => <PlaceGroupCard placeGroup={item} />}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={renderFilterChips}
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
       />
@@ -155,5 +221,20 @@ const styles = StyleSheet.create({
   emptySubtext: {
     ...typography.body,
     textAlign: 'center',
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+  },
+  chipText: {
+    fontSize: 14,
   },
 });
