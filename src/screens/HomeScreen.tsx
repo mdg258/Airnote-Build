@@ -5,13 +5,10 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
-  Modal,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Header } from '../components/Header';
-import { LocationChip } from '../components/LocationChip';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
 import { NoteDetailModal } from '../components/NoteDetailModal';
@@ -19,18 +16,9 @@ import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
 import { commentsService } from '../services/commentsService';
 import { Duration, Radius, Note, NoteCategory } from '../types/note';
-import { spacing, typography, borderRadius } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistance, formatTimeLeft } from '../utils/location';
-import { LEAVE_NOTE_CATEGORIES } from '../constants/noteTemplates';
-
-interface NoteGroup {
-  placeId: string;
-  placeName: string;
-  placeAddress?: string;
-  notes: Array<Note & { distance: number; timeLeft: number }>;
-  closestDistance: number;
-}
 
 export const HomeScreen: React.FC = () => {
   const { theme, textScale } = useTheme();
@@ -43,10 +31,6 @@ export const HomeScreen: React.FC = () => {
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [radius, setRadius] = useState<91 | 1609>(1609); // 300 ft or 1 mile
-  const [sortMode, setSortMode] = useState<'closest' | 'ending-soon'>('closest');
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
@@ -89,74 +73,15 @@ export const HomeScreen: React.FC = () => {
     setNearbyNotes(notes);
   };
 
-  // Get unique locations
-  const uniqueLocations = useMemo(() => {
-    const locationMap = new Map<string, { id: string; name: string }>();
-    nearbyNotes.forEach(note => {
-      if (note.placeId && note.placeName && !locationMap.has(note.placeId)) {
-        locationMap.set(note.placeId, {
-          id: note.placeId,
-          name: note.placeName,
-        });
-      }
+  // Sort notes by distance with urgency boost
+  const sortedNotes = useMemo(() => {
+    return [...nearbyNotes].sort((a, b) => {
+      // Boost notes that are expiring soon (< 1 hour)
+      const aBoost = a.timeLeft < 3600000 ? -200 : 0;
+      const bBoost = b.timeLeft < 3600000 ? -200 : 0;
+      return (a.distance + aBoost) - (b.distance + bBoost);
     });
-    return Array.from(locationMap.values());
   }, [nearbyNotes]);
-
-  // Group notes by place and sort
-  const noteGroups = useMemo(() => {
-    let filtered = nearbyNotes;
-
-    // Filter by selected location
-    if (selectedLocation) {
-      filtered = filtered.filter(note => note.placeId === selectedLocation);
-    }
-
-    // Group by place
-    const groups = new Map<string, NoteGroup>();
-    filtered.forEach(note => {
-      const key = note.placeId || note.placeName || 'unknown';
-
-      if (!groups.has(key)) {
-        groups.set(key, {
-          placeId: key,
-          placeName: note.placeName || 'Unknown Location',
-          placeAddress: note.placeAddress,
-          notes: [],
-          closestDistance: note.distance,
-        });
-      }
-
-      const group = groups.get(key)!;
-      group.notes.push(note);
-      if (note.distance < group.closestDistance) {
-        group.closestDistance = note.distance;
-      }
-    });
-
-    // Convert to array and sort groups
-    const groupArray = Array.from(groups.values());
-
-    if (sortMode === 'ending-soon') {
-      // Sort groups by earliest expiring note
-      groupArray.forEach(group => {
-        group.notes.sort((a, b) => a.timeLeft - b.timeLeft);
-      });
-      groupArray.sort((a, b) => a.notes[0].timeLeft - b.notes[0].timeLeft);
-    } else {
-      // Sort groups by closest distance, then sort notes within each group
-      groupArray.forEach(group => {
-        group.notes.sort((a, b) => {
-          const aBoost = a.timeLeft < 3600000 ? -50 : 0;
-          const bBoost = b.timeLeft < 3600000 ? -50 : 0;
-          return (a.distance + aBoost) - (b.distance + bBoost);
-        });
-      });
-      groupArray.sort((a, b) => a.closestDistance - b.closestDistance);
-    }
-
-    return groupArray;
-  }, [nearbyNotes, selectedLocation, sortMode]);
 
   const handleCreateNote = (
     text: string,
@@ -184,172 +109,42 @@ export const HomeScreen: React.FC = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
-  const renderFilterChips = () => (
-    <View style={styles.filterContainer}>
-      <TouchableOpacity
-        style={[styles.chip, { backgroundColor: theme.card, borderColor: theme.text.tertiary + '20' }]}
-        onPress={() => setRadius(radius === 91 ? 1609 : 91)}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.chipText, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
-          {radius === 91 ? 'Here · 300 ft' : 'Nearby · 1 mi'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[
-          styles.chip,
-          {
-            backgroundColor: sortMode === 'closest' ? theme.primaryDark : theme.card,
-            borderColor: sortMode === 'closest' ? theme.primaryDark : theme.text.tertiary + '20',
-          },
-        ]}
-        onPress={() => setSortMode(sortMode === 'closest' ? 'ending-soon' : 'closest')}
-        activeOpacity={0.7}
-      >
-        <Text
-          style={[
-            styles.chipText,
-            {
-              color: sortMode === 'closest' ? '#FFFFFF' : theme.text.secondary,
-              fontWeight: sortMode === 'closest' ? '500' : '400',
-              fontSize: 14 * textScale,
-            },
-          ]}
-        >
-          {sortMode === 'closest' ? 'Closest' : 'Ending Soon'}
-        </Text>
-      </TouchableOpacity>
-
-      {uniqueLocations.length > 0 && (
-        <TouchableOpacity
-          style={[
-            styles.chip,
-            {
-              backgroundColor: selectedLocation ? theme.primaryDark : theme.card,
-              borderColor: selectedLocation ? theme.primaryDark : theme.text.tertiary + '20',
-            },
-          ]}
-          onPress={() => setLocationPickerVisible(true)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.chipWithIcon}>
-            <Text
-              style={[
-                styles.chipText,
-                {
-                  color: selectedLocation ? '#FFFFFF' : theme.text.secondary,
-                  fontWeight: selectedLocation ? '500' : '400',
-                  fontSize: 14 * textScale,
-                },
-              ]}
-            >
-              {selectedLocation
-                ? uniqueLocations.find(l => l.id === selectedLocation)?.name || 'Location'
-                : 'All Locations'}
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={14}
-              color={selectedLocation ? '#FFFFFF' : theme.text.secondary}
-            />
-          </View>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-
-  const toggleGroupCollapse = (placeId: string) => {
-    setCollapsedGroups(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(placeId)) {
-        newSet.delete(placeId);
-      } else {
-        newSet.add(placeId);
-      }
-      return newSet;
-    });
-  };
-
-  const renderNoteGroup = (group: NoteGroup) => {
-    const categoryInfo = (noteCategory: string | undefined) =>
-      noteCategory ? LEAVE_NOTE_CATEGORIES.find(cat => cat.id === noteCategory) : null;
-
-    const isCollapsed = collapsedGroups.has(group.placeId);
+  const renderNoteCard = (note: Note & { distance: number; timeLeft: number }, index: number) => {
+    const commentCount = commentCounts.get(note.id) || 0;
 
     return (
-      <View
-        key={group.placeId}
-        style={[styles.noteGroup, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
-      >
-        {/* Place Header */}
+      <View key={note.id}>
         <TouchableOpacity
-          style={[styles.placeHeader, { backgroundColor: theme.primaryDark + '40' }]}
-          onPress={() => toggleGroupCollapse(group.placeId)}
+          style={styles.noteItem}
+          onPress={() => {
+            setSelectedNote(note);
+            setNoteDetailModalVisible(true);
+          }}
           activeOpacity={0.7}
         >
-          <View style={styles.placeInfo}>
-            <Text style={[styles.placeName, { color: theme.text.primary, fontSize: 18 * textScale }]}>
-              📍 {group.placeName}
+          {/* Note Text - Primary Focus */}
+          <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 19 * textScale }]}>
+            {note.text}
+          </Text>
+
+          {/* Metadata - Secondary */}
+          <View style={styles.metadataRow}>
+            <Text style={[styles.metadataText, { color: theme.text.secondary, fontSize: 13 * textScale }]}>
+              {note.placeName || 'Unknown Location'} · {formatDistance(note.distance)} · {formatTimeLeft(note.timeLeft)}
             </Text>
-            {group.placeAddress && (
-              <Text style={[styles.placeAddress, { color: theme.text.tertiary, fontSize: 14 * textScale }]} numberOfLines={1}>
-                {group.placeAddress}
-              </Text>
+            {commentCount > 0 && (
+              <View style={styles.commentBadge}>
+                <Ionicons name="chatbubble" size={11} color={theme.text.secondary} />
+                <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 13 * textScale }]}>
+                  {commentCount}
+                </Text>
+              </View>
             )}
           </View>
-          <View style={styles.placeMetaContainer}>
-            <Text style={[styles.placeDistance, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
-              {formatDistance(group.closestDistance)}
-            </Text>
-            <Text style={[styles.noteCount, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
-              {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
-            </Text>
-            <Ionicons
-              name={isCollapsed ? 'chevron-down' : 'chevron-up'}
-              size={18}
-              color={theme.text.tertiary}
-              style={{ marginTop: 2 }}
-            />
-          </View>
         </TouchableOpacity>
-
-        {/* Notes List */}
-        {!isCollapsed && group.notes.map((note, index) => {
-          const catInfo = categoryInfo(note.category);
-          const isLast = index === group.notes.length - 1;
-          const commentCount = commentCounts.get(note.id) || 0;
-
-          return (
-            <View key={note.id}>
-              <TouchableOpacity
-                style={styles.noteItem}
-                onPress={() => {
-                  setSelectedNote(note);
-                  setNoteDetailModalVisible(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={styles.noteContent}>
-                  <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
-                    {!note.category && '✈️ '}{note.text}
-                  </Text>
-                </View>
-                <View style={styles.noteMeta}>
-                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
-                    {formatTimeLeft(note.timeLeft)}
-                  </Text>
-                  {commentCount > 0 && (
-                    <Text style={[styles.noteMetaText, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
-                      {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-              {!isLast && <View style={[styles.noteDivider, { backgroundColor: theme.cardBorder }]} />}
-            </View>
-          );
-        })}
+        {index < sortedNotes.length - 1 && (
+          <View style={[styles.divider, { backgroundColor: theme.primaryDark }]} />
+        )}
       </View>
     );
   };
@@ -384,10 +179,23 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-      <Header />
-      <LocationChip placeName={location.placeName} hasPermission={location.hasPermission} />
-      {renderFilterChips()}
-      {noteGroups.length === 0 ? (
+      {/* Simplified Header */}
+      <View style={styles.header}>
+        <Text style={[styles.appTitle, { color: theme.text.primary, fontSize: 36 * textScale }]}>
+          airnote
+        </Text>
+        <View style={styles.locationRow}>
+          <Text style={[styles.locationHeader, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+            Here
+          </Text>
+          <View style={[styles.greenDot, { backgroundColor: theme.primaryDark }]} />
+          <Text style={[styles.locationHeader, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+            {location.placeName || 'Finding location...'}
+          </Text>
+        </View>
+      </View>
+
+      {sortedNotes.length === 0 ? (
         renderEmptyState()
       ) : (
         <ScrollView
@@ -395,10 +203,12 @@ export const HomeScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {noteGroups.map(renderNoteGroup)}
+          {sortedNotes.map((note, index) => renderNoteCard(note, index))}
         </ScrollView>
       )}
+
       <FloatingActionButton onPress={() => setModalVisible(true)} />
+
       <CreateNoteModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -407,7 +217,6 @@ export const HomeScreen: React.FC = () => {
         currentLongitude={location.longitude}
       />
 
-      {/* Note Detail Modal */}
       <NoteDetailModal
         visible={noteDetailModalVisible}
         onClose={() => {
@@ -419,55 +228,6 @@ export const HomeScreen: React.FC = () => {
         userLongitude={location.longitude}
         onCommentAdded={() => setRefreshKey(prev => prev + 1)}
       />
-
-      {/* Location Picker Modal */}
-      <Modal
-        visible={locationPickerVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setLocationPickerVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setLocationPickerVisible(false)}
-        >
-          <View style={[styles.locationPickerContainer, { backgroundColor: theme.card }]}>
-            <TouchableOpacity
-              style={[styles.locationOption, { borderBottomColor: theme.cardBorder }]}
-              onPress={() => {
-                setSelectedLocation(null);
-                setLocationPickerVisible(false);
-              }}
-            >
-              <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
-                All Locations
-              </Text>
-              {!selectedLocation && (
-                <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
-              )}
-            </TouchableOpacity>
-
-            {uniqueLocations.map((loc) => (
-              <TouchableOpacity
-                key={loc.id}
-                style={[styles.locationOption, { borderBottomColor: theme.cardBorder }]}
-                onPress={() => {
-                  setSelectedLocation(loc.id);
-                  setLocationPickerVisible(false);
-                }}
-              >
-                <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
-                  {loc.name}
-                </Text>
-                {selectedLocation === loc.id && (
-                  <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -476,13 +236,77 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    alignItems: 'center',
+  },
+  appTitle: {
+    fontSize: 36,
+    fontFamily: 'Coolvetica',
+    letterSpacing: -0.5,
+    marginBottom: 6,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  greenDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  locationHeader: {
+    fontSize: 14,
+    fontWeight: '400',
+    opacity: 0.6,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingTop: spacing.sm,
+    paddingTop: spacing.xs,
     paddingBottom: 100,
-    gap: spacing.md,
+  },
+  noteItem: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    gap: spacing.sm,
+  },
+  noteText: {
+    fontSize: 19,
+    lineHeight: 26,
+    fontWeight: '400',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  metadataRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  metadataText: {
+    fontSize: 13,
+    fontWeight: '400',
+    flex: 1,
+    opacity: 0.7,
+  },
+  commentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  commentCount: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+  divider: {
+    height: 0.5,
+    marginLeft: spacing.lg,
+    opacity: 0.25,
   },
   emptyState: {
     flex: 1,
@@ -505,135 +329,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     opacity: 0.6,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    gap: 6,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
-    marginBottom: 4,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: borderRadius.full,
-    borderWidth: 0.5,
-  },
-  chipText: {
-    fontSize: 14,
-  },
-  chipWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  noteGroup: {
-    marginHorizontal: spacing.md,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    overflow: 'hidden',
-  },
-  placeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  placeInfo: {
-    flex: 1,
-  },
-  placeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 23,
-    marginBottom: 2,
-  },
-  placeAddress: {
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  placeMetaContainer: {
-    alignItems: 'flex-end',
-  },
-  placeDistance: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  noteCount: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  noteItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.md,
-  },
-  noteContent: {
-    flex: 1,
-  },
-  noteCategoryBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  noteCategoryEmoji: {
-    fontSize: 12,
-  },
-  noteText: {
-    fontSize: 17,
-    lineHeight: 23,
-    fontWeight: '400',
-  },
-  noteMeta: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  noteMetaText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  noteDivider: {
-    height: 0.5,
-    marginLeft: spacing.md,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  locationPickerContainer: {
-    width: '100%',
-    maxWidth: 400,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  locationOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  locationOptionText: {
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
