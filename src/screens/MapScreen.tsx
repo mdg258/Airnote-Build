@@ -32,6 +32,7 @@ export const MapScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   // Sleek opening animation sequence
   const mapScale = useRef(new Animated.Value(1.3)).current;
@@ -75,7 +76,10 @@ export const MapScreen: React.FC = () => {
             useNativeDriver: true,
           }),
         ]),
-      ]).start();
+      ]).start(() => {
+        // Mark animation as complete
+        setAnimationComplete(true);
+      });
     }, 300);
 
     return () => clearTimeout(timer);
@@ -186,7 +190,7 @@ export const MapScreen: React.FC = () => {
 
 
   // Only show permission denied state if we're not loading and permission is actually denied
-  if (!location.isLoading && !location.hasPermission) {
+  if (location.hasPermission === false && !location.isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
         <View style={styles.centerContent}>
@@ -254,7 +258,7 @@ export const MapScreen: React.FC = () => {
         </Animated.View>
 
         {/* Empty state overlay */}
-        {!isLoadingLocation && placeGroups.length === 0 && (
+        {!isLoadingLocation && placeGroups.length === 0 && animationComplete && (
           <View style={[styles.emptyOverlay, { backgroundColor: theme.background + 'CC' }]}>
             <View style={styles.emptyContent}>
               <Text style={styles.emptyIcon}>🗺️</Text>

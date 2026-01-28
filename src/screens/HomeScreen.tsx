@@ -38,6 +38,7 @@ export const HomeScreen: React.FC = () => {
   const [sortMode, setSortMode] = useState<SortMode>('distance');
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -77,6 +78,10 @@ export const HomeScreen: React.FC = () => {
     notesService.purgeExpiredNotes();
     const notes = notesService.getAllNotesWithinDistance(location.latitude, location.longitude, radius);
     setNearbyNotes(notes);
+    // Mark initial load as complete after first successful load
+    if (!initialLoadComplete) {
+      setInitialLoadComplete(true);
+    }
   };
 
   // Get unique places with notes
@@ -210,21 +215,19 @@ export const HomeScreen: React.FC = () => {
 
 
   const renderEmptyState = () => {
-    if (location.isLoading) {
-      return (
-        <View style={styles.emptyState}>
-          <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>Getting your location...</Text>
-        </View>
-      );
-    }
-    if (!location.hasPermission) {
+    // Only show permission denied if permission is explicitly false (not undefined) and not loading
+    if (location.hasPermission === false && !location.isLoading) {
       return (
         <View style={styles.emptyState}>
           <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>Location permission needed</Text>
           <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>Enable location access to see nearby notes</Text>
         </View>
       );
+    }
+
+    // Don't show empty states until initial load is complete
+    if (!initialLoadComplete) {
+      return null;
     }
 
     // Special message for comments mode

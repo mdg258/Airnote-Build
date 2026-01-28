@@ -18,15 +18,13 @@ export const MapContextMessage: React.FC<MapContextMessageProps> = ({
 
   const getMessage = () => {
     if (isLoading) return 'Looking around...';
-    if (noteCount === 0) return '';
+    if (noteCount === 0) return 'Not much around right now';
     if (noteCount <= 2) return 'Not much around right now';
     if (noteCount <= 5) return 'A few things around you';
     return "There's a lot happening nearby";
   };
 
   const message = getMessage();
-
-  if (!message && !isLoading) return null;
 
   return (
     <Animated.View style={[styles.container, { opacity }]}>
