@@ -2,9 +2,11 @@
 
 - **Add AI SUMMARY**
 
-- map keeps frezzing when used
+- add sorting / filtering to homepage
 
-- add and view comments from map view page
+- figure out better profile page
+
+- revamp map UI and functionality
 
 <br>
 - change location back so that users can only tag a place within a very small radius (100m)
