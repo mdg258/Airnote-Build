@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,8 @@ import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistance, formatTimeLeft } from '../utils/location';
 
+type SortMode = 'distance' | 'time' | 'comments';
+
 export const HomeScreen: React.FC = () => {
   const { theme, textScale } = useTheme();
   const location = useLocation();
@@ -32,6 +35,9 @@ export const HomeScreen: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [radius, setRadius] = useState<91 | 1609>(1609); // 300 ft or 1 mile
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+  const [sortMode, setSortMode] = useState<SortMode>('distance');
+  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -73,15 +79,55 @@ export const HomeScreen: React.FC = () => {
     setNearbyNotes(notes);
   };
 
-  // Sort notes by distance with urgency boost
-  const sortedNotes = useMemo(() => {
-    return [...nearbyNotes].sort((a, b) => {
-      // Boost notes that are expiring soon (< 1 hour)
-      const aBoost = a.timeLeft < 3600000 ? -200 : 0;
-      const bBoost = b.timeLeft < 3600000 ? -200 : 0;
-      return (a.distance + aBoost) - (b.distance + bBoost);
+  // Get unique places with notes
+  const placesWithNotes = useMemo(() => {
+    const placeMap = new Map<string, { id: string; name: string; count: number }>();
+
+    nearbyNotes.forEach(note => {
+      const placeId = note.placeId || 'unknown';
+      const placeName = note.placeName || 'Unknown Location';
+
+      if (placeMap.has(placeId)) {
+        const place = placeMap.get(placeId)!;
+        place.count += 1;
+      } else {
+        placeMap.set(placeId, { id: placeId, name: placeName, count: 1 });
+      }
     });
+
+    return Array.from(placeMap.values()).sort((a, b) => b.count - a.count);
   }, [nearbyNotes]);
+
+  // Filter and sort notes
+  const sortedNotes = useMemo(() => {
+    let filtered = [...nearbyNotes];
+
+    // Filter by selected place
+    if (selectedPlaceId) {
+      filtered = filtered.filter(note => (note.placeId || 'unknown') === selectedPlaceId);
+    }
+
+    // Comments mode: only show notes with comments
+    if (sortMode === 'comments') {
+      filtered = filtered.filter(note => (commentCounts.get(note.id) || 0) > 0);
+    }
+
+    return filtered.sort((a, b) => {
+      if (sortMode === 'distance') {
+        // Boost notes that are expiring soon (< 1 hour)
+        const aBoost = a.timeLeft < 3600000 ? -200 : 0;
+        const bBoost = b.timeLeft < 3600000 ? -200 : 0;
+        return (a.distance + aBoost) - (b.distance + bBoost);
+      } else if (sortMode === 'time') {
+        return a.timeLeft - b.timeLeft; // Expiring soonest first
+      } else {
+        // Sort by comment count
+        const aCount = commentCounts.get(a.id) || 0;
+        const bCount = commentCounts.get(b.id) || 0;
+        return bCount - aCount; // Most comments first
+      }
+    });
+  }, [nearbyNotes, sortMode, commentCounts, selectedPlaceId]);
 
   const handleCreateNote = (
     text: string,
@@ -162,6 +208,7 @@ export const HomeScreen: React.FC = () => {
     );
   };
 
+
   const renderEmptyState = () => {
     if (location.isLoading) {
       return (
@@ -179,6 +226,20 @@ export const HomeScreen: React.FC = () => {
         </View>
       );
     }
+
+    // Special message for comments mode
+    if (sortMode === 'comments') {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>💬</Text>
+          <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>No notes with replies nearby</Text>
+          <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
+            Notes with replies will appear here
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.emptyState}>
         <Text style={styles.emptyIcon}>📍</Text>
@@ -206,7 +267,188 @@ export const HomeScreen: React.FC = () => {
             {location.placeName || 'Finding location...'}
           </Text>
         </View>
+
+        {/* Sort Chips */}
+        <View style={styles.filterChips}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              {
+                backgroundColor: sortMode === 'distance' ? theme.primaryDark : theme.card,
+              },
+            ]}
+            onPress={() => setSortMode('distance')}
+            activeOpacity={0.6}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                {
+                  color: sortMode === 'distance' ? '#FFFFFF' : theme.text.secondary,
+                  fontSize: 15 * textScale,
+                },
+              ]}
+            >
+              Nearest
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              {
+                backgroundColor: sortMode === 'time' ? theme.primaryDark : theme.card,
+              },
+            ]}
+            onPress={() => setSortMode('time')}
+            activeOpacity={0.6}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                {
+                  color: sortMode === 'time' ? '#FFFFFF' : theme.text.secondary,
+                  fontSize: 15 * textScale,
+                },
+              ]}
+            >
+              Recent
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              {
+                backgroundColor: sortMode === 'comments' ? theme.primaryDark : theme.card,
+              },
+            ]}
+            onPress={() => setSortMode('comments')}
+            activeOpacity={0.6}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                {
+                  color: sortMode === 'comments' ? '#FFFFFF' : theme.text.secondary,
+                  fontSize: 15 * textScale,
+                },
+              ]}
+            >
+              Replies
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              {
+                backgroundColor: selectedPlaceId ? theme.primaryDark : theme.card,
+              },
+            ]}
+            onPress={() => setLocationPickerVisible(true)}
+            activeOpacity={0.6}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                {
+                  color: selectedPlaceId ? '#FFFFFF' : theme.text.secondary,
+                  fontSize: 15 * textScale,
+                },
+              ]}
+            >
+              Places
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={16}
+              color={selectedPlaceId ? '#FFFFFF' : theme.text.secondary}
+              style={{ opacity: selectedPlaceId ? 1 : 0.6, marginLeft: 4 }}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Selected Place Indicator */}
+        {selectedPlaceId && (
+          <Text style={[styles.placeIndicator, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+            Showing: {placesWithNotes.find(p => p.id === selectedPlaceId)?.name || 'Selected place'}
+          </Text>
+        )}
       </View>
+
+      {/* Places Picker Modal */}
+      <Modal
+        visible={locationPickerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLocationPickerVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setLocationPickerVisible(false)}
+        >
+          <View style={[styles.locationPickerContainer, { backgroundColor: theme.background }]}>
+            <View style={styles.pickerHeader}>
+              <Text style={[styles.pickerTitle, { color: theme.text.primary, fontSize: 18 * textScale }]}>
+                Filter by place
+              </Text>
+            </View>
+
+            {/* All places option */}
+            <TouchableOpacity
+              style={[
+                styles.locationOption,
+                { backgroundColor: selectedPlaceId === null ? theme.primaryDark + '20' : theme.card },
+              ]}
+              onPress={() => {
+                setSelectedPlaceId(null);
+                setLocationPickerVisible(false);
+              }}
+            >
+              <View style={styles.placeOptionContent}>
+                <Text style={[styles.locationOptionText, { color: theme.text.primary, fontSize: 16 * textScale }]}>
+                  All places
+                </Text>
+                <Text style={[styles.locationOptionSubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+                  {nearbyNotes.length} {nearbyNotes.length === 1 ? 'note' : 'notes'}
+                </Text>
+              </View>
+              {selectedPlaceId === null && (
+                <View style={[styles.selectedIndicator, { backgroundColor: theme.primaryDark }]} />
+              )}
+            </TouchableOpacity>
+
+            {/* Individual places */}
+            {placesWithNotes.map((place) => (
+              <TouchableOpacity
+                key={place.id}
+                style={[
+                  styles.locationOption,
+                  { backgroundColor: selectedPlaceId === place.id ? theme.primaryDark + '20' : theme.card },
+                ]}
+                onPress={() => {
+                  setSelectedPlaceId(place.id);
+                  setLocationPickerVisible(false);
+                }}
+              >
+                <View style={styles.placeOptionContent}>
+                  <Text style={[styles.locationOptionText, { color: theme.text.primary, fontSize: 16 * textScale }]} numberOfLines={1}>
+                    {place.name}
+                  </Text>
+                  <Text style={[styles.locationOptionSubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+                    {place.count} {place.count === 1 ? 'note' : 'notes'}
+                  </Text>
+                </View>
+                {selectedPlaceId === place.id && (
+                  <View style={[styles.selectedIndicator, { backgroundColor: theme.primaryDark }]} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {sortedNotes.length === 0 ? (
         renderEmptyState()
@@ -261,8 +503,9 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.sm,
     alignItems: 'center',
+    gap: spacing.sm,
   },
   appTitle: {
     fontSize: 36,
@@ -364,5 +607,91 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     opacity: 0.6,
+  },
+  filterChips: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 16,
+    minWidth: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  chipText: {
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: -0.2,
+  },
+  placeIndicator: {
+    fontSize: 13,
+    fontWeight: '400',
+    letterSpacing: -0.1,
+    opacity: 0.6,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  locationPickerContainer: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 20,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  pickerHeader: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.md,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    letterSpacing: -0.2,
+  },
+  locationOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.xl,
+    position: 'relative',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.xs,
+    borderRadius: 12,
+  },
+  placeOptionContent: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+  locationOptionText: {
+    fontSize: 16,
+    fontWeight: '400',
+    marginBottom: 4,
+    letterSpacing: -0.2,
+  },
+  locationOptionSubtext: {
+    fontSize: 14,
+    opacity: 0.5,
+    letterSpacing: -0.1,
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    right: spacing.xl,
+    top: '50%',
+    marginTop: -3,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });
