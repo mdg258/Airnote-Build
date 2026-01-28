@@ -268,7 +268,7 @@ export const HomeScreen: React.FC = () => {
       >
         {/* Place Header */}
         <TouchableOpacity
-          style={[styles.placeHeader, { backgroundColor: theme.primaryDark + '25' }]}
+          style={[styles.placeHeader, { backgroundColor: theme.primaryDark + '40' }]}
           onPress={() => toggleGroupCollapse(group.placeId)}
           activeOpacity={0.7}
         >
