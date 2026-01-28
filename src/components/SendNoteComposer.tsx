@@ -41,7 +41,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
   locationName,
   coordinates,
 }) => {
-  const { theme, themeMode } = useTheme();
+  const { theme, themeMode, textScale } = useTheme();
   const [text, setText] = useState('');
   const [radius, setRadius] = useState<Radius>(304.8);
   const [urgencyIndex, setUrgencyIndex] = useState(1);
@@ -65,7 +65,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="chevron-back" size={26} color={theme.text.secondary} />
         </TouchableOpacity>
-        <Text style={[styles.locationName, { color: theme.text.tertiary }]} numberOfLines={1}>
+        <Text style={[styles.locationName, { color: theme.text.tertiary, fontSize: 12 * textScale }]} numberOfLines={1}>
           {locationName}
         </Text>
         <View style={{ width: 26 }} />
@@ -82,7 +82,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
           <TextInput
             style={[
               styles.textInput,
-              { color: theme.text.primary },
+              { color: theme.text.primary, fontSize: 20 * textScale },
             ]}
             placeholder="What's on your mind?"
             placeholderTextColor={theme.text.tertiary + '80'}
@@ -92,7 +92,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
             maxLength={200}
             autoFocus
           />
-          <Text style={[styles.charCount, { color: theme.text.tertiary }]}>
+          <Text style={[styles.charCount, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             {text.length}/200
           </Text>
         </View>
@@ -100,10 +100,10 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         {/* Urgency Control */}
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
-            <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Urgency</Text>
+            <Text style={[styles.controlLabel, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>Urgency</Text>
             <View style={[styles.urgencyBadge, { backgroundColor: theme.primaryDark + '18' }]}>
               <Text style={styles.urgencyEmoji}>{currentUrgency.emoji}</Text>
-              <Text style={[styles.urgencyText, { color: theme.primaryDark }]}>
+              <Text style={[styles.urgencyText, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
                 {currentUrgency.label}
               </Text>
             </View>
@@ -129,6 +129,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                     color: urgencyIndex === index ? theme.primaryDark : theme.text.tertiary,
                     fontWeight: urgencyIndex === index ? '600' : '400',
                     opacity: urgencyIndex === index ? 1 : 0.5,
+                    fontSize: 11 * textScale,
                   },
                 ]}
               >
@@ -141,8 +142,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         {/* Range Control */}
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
-            <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Range</Text>
-            <Text style={[styles.rangeValue, { color: theme.primaryDark }]}>
+            <Text style={[styles.controlLabel, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>Range</Text>
+            <Text style={[styles.rangeValue, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
               {RADII.find((r) => r.value === radius)?.label}
             </Text>
           </View>
@@ -165,6 +166,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                     {
                       color: radius === r.value ? theme.primaryDark : theme.text.secondary,
                       fontWeight: radius === r.value ? '600' : '500',
+                      fontSize: 13 * textScale,
                     },
                   ]}
                 >
@@ -204,7 +206,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
               />
             </MapView>
           </View>
-          <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
+          <Text style={[styles.mapCaption, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             Broadcast range: {RADII.find(r => r.value === radius)?.label} · {currentUrgency.label}
           </Text>
         </View>
@@ -224,7 +226,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
           disabled={!text.trim()}
           activeOpacity={0.8}
         >
-          <Text style={styles.submitButtonText}>Send Note</Text>
+          <Text style={[styles.submitButtonText, { fontSize: 17 * textScale }]}>Send Note</Text>
           <Ionicons name="paper-plane" size={17} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

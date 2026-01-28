@@ -31,7 +31,7 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
   userLongitude,
   onNotePress,
 }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
 
   // Load comment counts when modal opens
@@ -68,21 +68,21 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
             <View style={styles.headerContent}>
-              <Text style={[styles.title, { color: theme.text.primary }]}>
+              <Text style={[styles.title, { color: theme.text.primary, fontSize: 20 * textScale }]}>
                 {placeGroup.placeName}
               </Text>
               {placeGroup.placeAddress && (
-                <Text style={[styles.address, { color: theme.text.secondary }]} numberOfLines={1}>
+                <Text style={[styles.address, { color: theme.text.secondary, fontSize: 14 * textScale }]} numberOfLines={1}>
                   {placeGroup.placeAddress}
                 </Text>
               )}
               <View style={styles.metadataRow}>
                 {distanceToPlace && (
-                  <Text style={[styles.distance, { color: theme.text.tertiary }]}>
+                  <Text style={[styles.distance, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
                     {distanceToPlace} away
                   </Text>
                 )}
-                <Text style={[styles.noteCount, { color: theme.primaryDark }]}>
+                <Text style={[styles.noteCount, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
                   {placeGroup.noteCount} {placeGroup.noteCount === 1 ? 'note' : 'notes'}
                 </Text>
               </View>
@@ -110,17 +110,17 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
                   onPress={() => onNotePress?.(note)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                  <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
                     {note.text}
                   </Text>
                   <View style={styles.noteMeta}>
-                    <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                    <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
                       {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
                     </Text>
                     {commentCount > 0 && (
                       <>
-                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}> · </Text>
-                        <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}> · </Text>
+                        <Text style={[styles.noteMetaText, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
                           {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
                         </Text>
                       </>

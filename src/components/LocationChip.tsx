@@ -9,13 +9,13 @@ interface LocationChipProps {
 }
 
 export const LocationChip: React.FC<LocationChipProps> = ({ placeName, hasPermission }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const displayText = hasPermission && placeName ? `Here · ${placeName}` : 'Here · Location Off';
 
   return (
     <View style={styles.container}>
       <View style={[styles.chip, { backgroundColor: theme.primaryDark }]}>
-        <Text style={[styles.text, { color: theme.text.inverse }]}>{displayText}</Text>
+        <Text style={[styles.text, { color: theme.text.inverse, fontSize: 14 * textScale }]}>{displayText}</Text>
       </View>
     </View>
   );

@@ -23,15 +23,15 @@ const formatRelativeTime = (date: Date): string => {
 };
 
 export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
 
   if (comments.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={[styles.emptyText, { color: theme.text.tertiary }]}>
+        <Text style={[styles.emptyText, { color: theme.text.tertiary, fontSize: 16 * textScale }]}>
           No comments yet
         </Text>
-        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>
+        <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
           Be the first to comment
         </Text>
       </View>
@@ -49,10 +49,10 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
             index === comments.length - 1 && { marginBottom: 0 },
           ]}
         >
-          <Text style={[styles.commentText, { color: theme.text.primary }]}>
+          <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
             {comment.text}
           </Text>
-          <Text style={[styles.commentTime, { color: theme.text.tertiary }]}>
+          <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             {formatRelativeTime(comment.createdAt)}
           </Text>
         </View>

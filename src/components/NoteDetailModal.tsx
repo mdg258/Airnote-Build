@@ -35,7 +35,7 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
   userLongitude,
   onCommentAdded,
 }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [isInRange, setIsInRange] = useState(false);
@@ -122,27 +122,27 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
             {/* Header */}
             <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
               <View style={styles.headerContent}>
-                <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
                   {note.text}
                 </Text>
                 <View style={styles.metadataRow}>
-                  <Text style={[styles.metadata, { color: theme.text.tertiary }]}>
+                  <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
                     {radiusInFeet}ft radius
                   </Text>
                   {distanceText && (
                     <>
-                      <Text style={[styles.metadata, { color: theme.text.tertiary }]}> · </Text>
-                      <Text style={[styles.metadata, { color: theme.text.tertiary }]}>
+                      <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}> · </Text>
+                      <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
                         {distanceText}
                       </Text>
                     </>
                   )}
-                  <Text style={[styles.metadata, { color: theme.text.tertiary }]}> · </Text>
-                  <Text style={[styles.metadata, { color: theme.primaryDark }]}>
+                  <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}> · </Text>
+                  <Text style={[styles.metadata, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
                     {formatTimeLeft(note.timeLeft)}
                   </Text>
                 </View>
-                <Text style={[styles.commentCount, { color: theme.text.secondary }]}>
+                <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
                   {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
                 </Text>
               </View>

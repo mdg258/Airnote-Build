@@ -10,7 +10,7 @@ interface NoteModeSelectorProps {
 }
 
 export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode, onClose }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const scaleLeave = React.useRef(new Animated.Value(1)).current;
   const scaleSend = React.useRef(new Animated.Value(1)).current;
 
@@ -46,8 +46,8 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
       )}
 
       <View style={styles.headerSection}>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Create a note</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>
+        <Text style={[styles.headerTitle, { color: theme.text.primary, fontSize: 26 * textScale }]}>Create a note</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
           Choose how you want to communicate
         </Text>
       </View>
@@ -70,11 +70,11 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
               <Text style={styles.modeIcon}>📍</Text>
             </View>
             <View style={styles.cardTitle}>
-              <Text style={[styles.modeTitle, { color: theme.text.primary }]}>Leave</Text>
-              <Text style={[styles.modeType, { color: theme.text.tertiary }]}>UTILITY</Text>
+              <Text style={[styles.modeTitle, { color: theme.text.primary, fontSize: 22 * textScale }]}>Leave</Text>
+              <Text style={[styles.modeType, { color: theme.text.tertiary, fontSize: 10 * textScale }]}>UTILITY</Text>
             </View>
           </View>
-          <Text style={[styles.modeDescription, { color: theme.text.secondary }]}>
+          <Text style={[styles.modeDescription, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
             Pin a helpful note to this exact location
           </Text>
         </TouchableOpacity>
@@ -98,11 +98,11 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
               <Text style={styles.modeIcon}>✈️</Text>
             </View>
             <View style={styles.cardTitle}>
-              <Text style={[styles.modeTitle, { color: theme.text.primary }]}>Send</Text>
-              <Text style={[styles.modeType, { color: theme.text.tertiary }]}>BROADCAST</Text>
+              <Text style={[styles.modeTitle, { color: theme.text.primary, fontSize: 22 * textScale }]}>Send</Text>
+              <Text style={[styles.modeType, { color: theme.text.tertiary, fontSize: 10 * textScale }]}>BROADCAST</Text>
             </View>
           </View>
-          <Text style={[styles.modeDescription, { color: theme.text.secondary }]}>
+          <Text style={[styles.modeDescription, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
             Broadcast a message to people nearby
           </Text>
         </TouchableOpacity>

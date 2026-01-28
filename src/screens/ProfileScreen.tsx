@@ -23,7 +23,7 @@ interface NoteGroup {
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const location = useLocation();
   const [userNotes, setUserNotes] = useState<Array<Note & { timeLeft: number }>>([]);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -92,8 +92,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const renderEmpty = () => (
     <View style={styles.emptyContent}>
       <Text style={styles.placeholderText}>📝</Text>
-      <Text style={[styles.subtitle, { color: theme.text.secondary }]}>No notes yet</Text>
-      <Text style={[styles.description, { color: theme.text.tertiary }]}>
+      <Text style={[styles.subtitle, { color: theme.text.secondary, fontSize: 18 * textScale }]}>No notes yet</Text>
+      <Text style={[styles.description, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
         Your posted notes will appear here
       </Text>
     </View>
@@ -114,17 +114,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <View style={styles.placeInfo}>
-            <Text style={[styles.placeName, { color: theme.text.primary }]}>
+            <Text style={[styles.placeName, { color: theme.text.primary, fontSize: 17 * textScale }]}>
               📍 {group.placeName}
             </Text>
             {group.placeAddress && (
-              <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
+              <Text style={[styles.placeAddress, { color: theme.text.tertiary, fontSize: 14 * textScale }]} numberOfLines={1}>
                 {group.placeAddress}
               </Text>
             )}
           </View>
           <View style={styles.placeHeaderRight}>
-            <Text style={[styles.noteCount, { color: theme.text.tertiary }]}>
+            <Text style={[styles.noteCount, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
               {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
             </Text>
             <Ionicons
@@ -150,17 +150,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
                   {!note.category && '✈️ '}{note.text}
                 </Text>
                 <View style={styles.noteMeta}>
-                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
                     {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
                   </Text>
                   {commentCount > 0 && (
                     <>
-                      <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}> · </Text>
-                      <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                      <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}> · </Text>
+                      <Text style={[styles.noteMetaText, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
                         {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
                       </Text>
                     </>

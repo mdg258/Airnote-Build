@@ -17,7 +17,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   disabled = false,
   disabledMessage,
 }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const [text, setText] = useState('');
 
   const handleSubmit = () => {
@@ -42,7 +42,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       {disabledMessage && (
         <View style={[styles.disabledBanner, { backgroundColor: theme.primaryDark + '15' }]}>
           <Ionicons name="information-circle" size={16} color={theme.primaryDark} />
-          <Text style={[styles.disabledText, { color: theme.primaryDark }]}>
+          <Text style={[styles.disabledText, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
             {disabledMessage}
           </Text>
         </View>
@@ -51,7 +51,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         <TextInput
           style={[
             styles.input,
-            { color: theme.text.primary },
+            { color: theme.text.primary, fontSize: 15 * textScale },
             disabled && styles.disabledInput,
           ]}
           placeholder={placeholder}
@@ -64,7 +64,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           textAlignVertical="top"
         />
         <View style={styles.inputFooter}>
-          <Text style={[styles.charCount, { color: charCountColor }]}>
+          <Text style={[styles.charCount, { color: charCountColor, fontSize: 12 * textScale }]}>
             {text.length}/100
           </Text>
           <TouchableOpacity

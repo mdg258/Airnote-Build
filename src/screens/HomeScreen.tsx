@@ -33,7 +33,7 @@ interface NoteGroup {
 }
 
 export const HomeScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const location = useLocation();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedNote, setSelectedNote] = useState<(Note & { distance: number; timeLeft: number }) | null>(null);
@@ -191,7 +191,7 @@ export const HomeScreen: React.FC = () => {
         onPress={() => setRadius(radius === 91 ? 1609 : 91)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.chipText, { color: theme.text.secondary }]}>
+        <Text style={[styles.chipText, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
           {radius === 91 ? 'Here · 300 ft' : 'Nearby · 1 mi'}
         </Text>
       </TouchableOpacity>
@@ -213,6 +213,7 @@ export const HomeScreen: React.FC = () => {
             {
               color: sortMode === 'closest' ? '#FFFFFF' : theme.text.secondary,
               fontWeight: sortMode === 'closest' ? '500' : '400',
+              fontSize: 14 * textScale,
             },
           ]}
         >
@@ -239,6 +240,7 @@ export const HomeScreen: React.FC = () => {
                 {
                   color: selectedLocation ? '#FFFFFF' : theme.text.secondary,
                   fontWeight: selectedLocation ? '500' : '400',
+                  fontSize: 14 * textScale,
                 },
               ]}
             >
@@ -287,20 +289,20 @@ export const HomeScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <View style={styles.placeInfo}>
-            <Text style={[styles.placeName, { color: theme.text.primary }]}>
+            <Text style={[styles.placeName, { color: theme.text.primary, fontSize: 18 * textScale }]}>
               📍 {group.placeName}
             </Text>
             {group.placeAddress && (
-              <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
+              <Text style={[styles.placeAddress, { color: theme.text.tertiary, fontSize: 14 * textScale }]} numberOfLines={1}>
                 {group.placeAddress}
               </Text>
             )}
           </View>
           <View style={styles.placeMetaContainer}>
-            <Text style={[styles.placeDistance, { color: theme.primaryDark }]}>
+            <Text style={[styles.placeDistance, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
               {formatDistance(group.closestDistance)}
             </Text>
-            <Text style={[styles.noteCount, { color: theme.text.tertiary }]}>
+            <Text style={[styles.noteCount, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
               {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
             </Text>
             <Ionicons
@@ -329,16 +331,16 @@ export const HomeScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <View style={styles.noteContent}>
-                  <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                  <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
                     {!note.category && '✈️ '}{note.text}
                   </Text>
                 </View>
                 <View style={styles.noteMeta}>
-                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
                     {formatTimeLeft(note.timeLeft)}
                   </Text>
                   {commentCount > 0 && (
-                    <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                    <Text style={[styles.noteMetaText, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
                       {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
                     </Text>
                   )}
@@ -357,23 +359,23 @@ export const HomeScreen: React.FC = () => {
       return (
         <View style={styles.emptyState}>
           <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.emptyText, { color: theme.text.secondary }]}>Getting your location...</Text>
+          <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>Getting your location...</Text>
         </View>
       );
     }
     if (!location.hasPermission) {
       return (
         <View style={styles.emptyState}>
-          <Text style={[styles.emptyText, { color: theme.text.secondary }]}>Location permission needed</Text>
-          <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>Enable location access to see nearby notes</Text>
+          <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>Location permission needed</Text>
+          <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>Enable location access to see nearby notes</Text>
         </View>
       );
     }
     return (
       <View style={styles.emptyState}>
         <Text style={styles.emptyIcon}>📍</Text>
-        <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No notes nearby</Text>
-        <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>
+        <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 18 * textScale }]}>No notes nearby</Text>
+        <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
           Notes within {radius === 91 ? '300 feet' : '1 mile'} will appear here
         </Text>
       </View>

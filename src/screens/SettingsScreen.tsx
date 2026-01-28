@@ -5,13 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { TextSizeControl } from '../components/TextSizeControl';
 
 interface SettingsScreenProps {
   navigation: any;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
 
   const SettingItem = ({
     icon,
@@ -43,9 +44,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
           <Ionicons name={icon as any} size={20} color={theme.primaryDark} />
         </View>
         <View style={styles.settingText}>
-          <Text style={[styles.settingTitle, { color: theme.text.primary }]}>{title}</Text>
+          <Text style={[styles.settingTitle, { color: theme.text.primary, fontSize: 16 * textScale }]}>{title}</Text>
           {subtitle && (
-            <Text style={[styles.settingSubtitle, { color: theme.text.tertiary }]}>{subtitle}</Text>
+            <Text style={[styles.settingSubtitle, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>{subtitle}</Text>
           )}
         </View>
       </View>
@@ -66,12 +67,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
         >
           <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Settings</Text>
+        <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Settings</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>APPEARANCE</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text.secondary, fontSize: 13 * textScale }]}>APPEARANCE</Text>
           <View style={[styles.sectionContent, { backgroundColor: theme.card }]}>
             <SettingItem
               icon="moon-outline"
@@ -79,11 +80,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
               subtitle="Toggle between light and dark theme"
               rightComponent={<ThemeToggle />}
             />
+            <SettingItem
+              icon="text-outline"
+              title="Text Size"
+              subtitle="Adjust the size of text in the app"
+              rightComponent={<TextSizeControl />}
+            />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>ABOUT</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text.secondary, fontSize: 13 * textScale }]}>ABOUT</Text>
           <View style={[styles.sectionContent, { backgroundColor: theme.card }]}>
             <SettingItem
               icon="information-circle-outline"

@@ -21,7 +21,7 @@ import { CustomMarker } from '../components/CustomMarker';
 import { MapBottomDrawer } from '../components/MapBottomDrawer';
 
 export const MapScreen: React.FC = () => {
-  const { theme, themeMode } = useTheme();
+  const { theme, themeMode, textScale } = useTheme();
   const isDark = themeMode === 'dark';
   const location = useLocation();
   const mapRef = useRef<MapView>(null);
@@ -137,11 +137,11 @@ export const MapScreen: React.FC = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>Map</Text>
+          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.statusText, { color: theme.text.secondary }]}>
+          <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
             Getting your location...
           </Text>
         </View>
@@ -154,14 +154,14 @@ export const MapScreen: React.FC = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>Map</Text>
+          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
         </View>
         <View style={styles.centerContent}>
           <Text style={styles.permissionIcon}>📍</Text>
-          <Text style={[styles.statusText, { color: theme.text.secondary }]}>
+          <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
             Location permission needed
           </Text>
-          <Text style={[styles.statusSubtext, { color: theme.text.tertiary }]}>
+          <Text style={[styles.statusSubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
             Enable location access to see notes on the map
           </Text>
         </View>
@@ -174,11 +174,11 @@ export const MapScreen: React.FC = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>Map</Text>
+          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
         </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.statusText, { color: theme.text.secondary }]}>
+          <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
             Loading map...
           </Text>
         </View>
@@ -189,7 +189,7 @@ export const MapScreen: React.FC = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Map</Text>
+        <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
       </View>
 
       <View style={styles.mapContainer}>
@@ -223,10 +223,10 @@ export const MapScreen: React.FC = () => {
           <View style={[styles.emptyOverlay, { backgroundColor: theme.background + 'CC' }]}>
             <View style={styles.emptyContent}>
               <Text style={styles.emptyIcon}>🗺️</Text>
-              <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
+              <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
                 No notes nearby
               </Text>
-              <Text style={[styles.emptySubtext, { color: theme.text.tertiary }]}>
+              <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
                 Notes within 1 mile will appear on the map
               </Text>
             </View>

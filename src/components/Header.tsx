@@ -5,11 +5,11 @@ import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
 
 export const Header: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
 
   return (
     <View style={styles.header}>
-      <Text style={[styles.title, { color: theme.text.primary }]}>Airnote</Text>
+      <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Airnote</Text>
       <ThemeToggle />
     </View>
   );

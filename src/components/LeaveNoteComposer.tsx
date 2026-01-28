@@ -38,7 +38,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
   selectedLocation,
   onLocationChange,
 }) => {
-  const { theme, themeMode } = useTheme();
+  const { theme, themeMode, textScale } = useTheme();
   const [text, setText] = useState('');
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
@@ -59,7 +59,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="chevron-back" size={26} color={theme.text.secondary} />
         </TouchableOpacity>
-        <Text style={[styles.locationName, { color: theme.text.tertiary }]} numberOfLines={1}>
+        <Text style={[styles.locationName, { color: theme.text.tertiary, fontSize: 12 * textScale }]} numberOfLines={1}>
           {locationName}
         </Text>
         <View style={{ width: 26 }} />
@@ -77,7 +77,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           <TextInput
             style={[
               styles.textInput,
-              { color: theme.text.primary },
+              { color: theme.text.primary, fontSize: 20 * textScale },
             ]}
             placeholder="What's happening here?"
             placeholderTextColor={theme.text.tertiary + '80'}
@@ -87,7 +87,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
             maxLength={100}
             autoFocus
           />
-          <Text style={[styles.charCount, { color: theme.text.tertiary }]}>
+          <Text style={[styles.charCount, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             {text.length}/100
           </Text>
         </View>
@@ -95,7 +95,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
         {/* Location Picker */}
         {locationOptions.length > 1 && (
           <View style={styles.locationSection}>
-            <Text style={[styles.sectionLabel, { color: theme.text.tertiary }]}>LOCATION</Text>
+            <Text style={[styles.sectionLabel, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>LOCATION</Text>
             <TouchableOpacity
               style={[styles.locationButton, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
               onPress={() => setLocationPickerVisible(true)}
@@ -104,11 +104,11 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               <View style={styles.locationButtonContent}>
                 <Ionicons name="location" size={18} color={theme.primaryDark} />
                 <View style={styles.locationTextContainer}>
-                  <Text style={[styles.locationButtonText, { color: theme.text.primary }]} numberOfLines={1}>
+                  <Text style={[styles.locationButtonText, { color: theme.text.primary, fontSize: 15 * textScale }]} numberOfLines={1}>
                     {selectedLocation?.name || locationName}
                   </Text>
                   {selectedLocation?.description && (
-                    <Text style={[styles.locationButtonSubtext, { color: theme.text.tertiary }]} numberOfLines={1}>
+                    <Text style={[styles.locationButtonSubtext, { color: theme.text.tertiary, fontSize: 13 * textScale }]} numberOfLines={1}>
                       {selectedLocation.description}
                     </Text>
                   )}
@@ -148,7 +148,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               />
             </MapView>
           </View>
-          <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
+          <Text style={[styles.mapCaption, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             Visible within 50ft · 1 hour
           </Text>
         </View>
@@ -168,7 +168,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           disabled={!text.trim()}
           activeOpacity={0.8}
         >
-          <Text style={styles.submitButtonText}>Place Note</Text>
+          <Text style={[styles.submitButtonText, { fontSize: 17 * textScale }]}>Place Note</Text>
         </TouchableOpacity>
       </View>
 
@@ -186,7 +186,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
         >
           <View style={[styles.locationPickerContainer, { backgroundColor: theme.card }]}>
             <View style={[styles.pickerHeader, { borderBottomColor: theme.cardBorder }]}>
-              <Text style={[styles.pickerTitle, { color: theme.text.primary }]}>Choose Location</Text>
+              <Text style={[styles.pickerTitle, { color: theme.text.primary, fontSize: 18 * textScale }]}>Choose Location</Text>
             </View>
             {locationOptions.map((location, index) => (
               <TouchableOpacity
@@ -208,11 +208,11 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
                     color={selectedLocation?.id === location.id ? theme.primaryDark : theme.text.secondary}
                   />
                   <View style={styles.locationOptionTextContainer}>
-                    <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
+                    <Text style={[styles.locationOptionText, { color: theme.text.primary, fontSize: 16 * textScale }]}>
                       {location.name}
                     </Text>
                     {location.description && (
-                      <Text style={[styles.locationOptionSubtext, { color: theme.text.tertiary }]} numberOfLines={1}>
+                      <Text style={[styles.locationOptionSubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]} numberOfLines={1}>
                         {location.description}
                       </Text>
                     )}

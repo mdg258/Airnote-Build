@@ -28,7 +28,7 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
   placeGroups,
   onPlacePress,
 }) => {
-  const { theme } = useTheme();
+  const { theme, textScale } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = useCallback(() => {
@@ -51,15 +51,15 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
         activeOpacity={0.7}
       >
         <View style={styles.placeItemContent}>
-          <Text style={[styles.placeTitle, { color: theme.text.primary }]} numberOfLines={1}>
+          <Text style={[styles.placeTitle, { color: theme.text.primary, fontSize: 16 * textScale }]} numberOfLines={1}>
             {item.placeName}
           </Text>
           {item.placeAddress && (
-            <Text style={[styles.placeSubtitle, { color: theme.text.secondary }]} numberOfLines={1}>
+            <Text style={[styles.placeSubtitle, { color: theme.text.secondary, fontSize: 14 * textScale }]} numberOfLines={1}>
               {item.placeAddress}
             </Text>
           )}
-          <Text style={[styles.placeMetadata, { color: theme.text.tertiary }]}>
+          <Text style={[styles.placeMetadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
             {formatDistance(item.closestDistance)} • {item.noteCount} {item.noteCount === 1 ? 'note' : 'notes'}
           </Text>
         </View>
@@ -89,7 +89,7 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
       >
         <View style={styles.handleBar} />
         <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: theme.text.primary }]}>
+          <Text style={[styles.headerTitle, { color: theme.text.primary, fontSize: 16 * textScale }]}>
             Nearby notes • {placeGroups.length} {placeGroups.length === 1 ? 'place' : 'places'}
           </Text>
           <Text style={[styles.chevron, { color: theme.text.secondary }]}>
@@ -109,7 +109,7 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
+                <Text style={[styles.emptyText, { color: theme.text.secondary, fontSize: 16 * textScale }]}>
                   No nearby notes
                 </Text>
               </View>
