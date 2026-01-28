@@ -68,29 +68,29 @@ export const borderRadius = {
 
 export const typography = {
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '600' as const,
-    lineHeight: 34,
+    lineHeight: 36,
   },
   heading: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: '600' as const,
-    lineHeight: 25,
+    lineHeight: 26,
   },
   body: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '400' as const,
-    lineHeight: 22,
+    lineHeight: 23,
   },
   caption: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400' as const,
-    lineHeight: 18,
+    lineHeight: 19,
   },
   small: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '400' as const,
-    lineHeight: 16,
+    lineHeight: 17,
   },
 } as const;
 

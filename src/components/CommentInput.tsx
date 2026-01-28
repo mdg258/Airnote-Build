@@ -43,7 +43,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         <TextInput
           style={[
             styles.input,
-            { color: theme.text.primary, fontSize: 17 * textScale },
+            { color: theme.text.primary, fontSize: 19 * textScale },
             disabled && styles.disabledInput,
           ]}
           placeholder={placeholder}
@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 19,
+    lineHeight: 24,
     padding: 0,
     margin: 0,
     fontWeight: '400',

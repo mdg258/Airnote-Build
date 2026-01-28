@@ -122,10 +122,10 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
             {/* Context Note - Floating, Minimal */}
             <View style={styles.contextContainer}>
               <View style={[styles.contextNote, { backgroundColor: theme.card }]}>
-                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
+                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
                   {note.text}
                 </Text>
-                <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
+                <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
                   {formatTimeLeft(note.timeLeft)} · {distanceText || `${radiusInFeet}ft radius`}
                 </Text>
               </View>
@@ -198,15 +198,15 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   noteText: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '400',
-    lineHeight: 21,
+    lineHeight: 23,
     letterSpacing: -0.2,
     opacity: 0.85,
   },
   metadata: {
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 18,
     opacity: 0.4,
     letterSpacing: -0.05,
   },

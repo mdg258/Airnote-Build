@@ -28,7 +28,7 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
   if (comments.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={[styles.emptyText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+        <Text style={[styles.emptyText, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
           No replies yet
         </Text>
       </View>
@@ -40,10 +40,10 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
       {comments.map((comment, index) => (
         <React.Fragment key={comment.id}>
           <View style={styles.commentItem}>
-            <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
+            <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
               {comment.text}
             </Text>
-            <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
+            <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
               {formatRelativeTime(comment.createdAt)}
             </Text>
           </View>
@@ -72,14 +72,14 @@ const styles = StyleSheet.create({
     opacity: 0.15,
   },
   commentText: {
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 17,
+    lineHeight: 23,
     fontWeight: '400',
     letterSpacing: -0.2,
     opacity: 0.9,
   },
   commentTime: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '400',
     opacity: 0.35,
     letterSpacing: -0.05,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl * 2,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
     opacity: 0.4,
   },
