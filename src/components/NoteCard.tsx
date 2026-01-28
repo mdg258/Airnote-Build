@@ -29,7 +29,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, sh
         {showLocation ? (
           <View style={{ flex: 1, marginRight: spacing.sm }}>
             <Text style={[styles.location, { color: theme.text.primary }]}>
-              <Text style={{ color: theme.primaryDark }}>📍 </Text>
+              <Text style={{ color: theme.primaryDark }}>{note.category ? '📍' : '✈️'} </Text>
               {note.placeName || 'Unknown location'}
             </Text>
             {note.placeAddress && (

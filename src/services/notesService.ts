@@ -1,4 +1,4 @@
-import { Note, CreateNoteInput, Duration } from '../types/note';
+import { Note, CreateNoteInput, Duration, NoteCategory } from '../types/note';
 import { calculateDistance } from '../utils/location';
 
 // In-memory storage for notes
@@ -211,6 +211,7 @@ export const notesService = {
         longitude: -77.61065958748061,
         radius: 100,
         duration: '30m' as Duration,
+        category: 'info' as NoteCategory,
       },
       {
         text: 'Order the chicken strip basket - best value on the menu',
@@ -220,6 +221,7 @@ export const notesService = {
         longitude: -77.61065958748061,
         radius: 75,
         duration: '1h' as Duration,
+        category: 'info' as NoteCategory,
       },
       {
         text: 'Soft serve machine is working today! 🎉',
@@ -240,6 +242,7 @@ export const notesService = {
         longitude: -77.61145697314196,
         radius: 60,
         duration: '1h' as Duration,
+        category: 'info' as NoteCategory,
       },
       {
         text: '50% off all clothing today only!',
@@ -260,6 +263,7 @@ export const notesService = {
         longitude: -77.61127496661474,
         radius: 75,
         duration: '4h' as Duration,
+        category: 'info' as NoteCategory,
       },
       {
         text: 'Unit 42 door sticks - push hard on bottom left',
@@ -269,6 +273,7 @@ export const notesService = {
         longitude: -77.61127496661474,
         radius: 50,
         duration: '24h' as Duration,
+        category: 'issue' as NoteCategory,
       },
 
       // Greg's Garage notes
@@ -280,6 +285,7 @@ export const notesService = {
         longitude: -77.60932126312186,
         radius: 75,
         duration: '24h' as Duration,
+        category: 'info' as NoteCategory,
       },
       {
         text: 'Appointment running 30 min late - grab coffee next door',
@@ -289,6 +295,7 @@ export const notesService = {
         longitude: -77.60932126312186,
         radius: 50,
         duration: '15m' as Duration,
+        category: 'warning' as NoteCategory,
       },
       {
         text: 'They accept walk-ins for tire rotation - no appointment needed',
@@ -298,6 +305,7 @@ export const notesService = {
         longitude: -77.60932126312186,
         radius: 100,
         duration: '4h' as Duration,
+        category: 'info' as NoteCategory,
       },
     ];
 
@@ -320,6 +328,7 @@ export const notesService = {
         expiresAt,
         duration: data.duration,
         userId: 'seed-user', // Use different userId so seed notes don't appear in "My Notes"
+        category: (data as any).category,
       };
 
       notes.push(note);

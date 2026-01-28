@@ -47,11 +47,11 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
 
   const latitude = coordinates?.latitude ?? 37.7749;
   const longitude = coordinates?.longitude ?? -122.4194;
-  const radius = 91.44; // 300ft
+  const radius = 15.24; // 50ft
 
   const handleSubmit = () => {
     if (text.trim()) {
-      onCreate(text.trim(), '1h', 91.44, category);
+      onCreate(text.trim(), '1h', 15.24, category);
     }
   };
 
@@ -181,7 +181,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
             </MapView>
           </View>
           <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
-            Visible within 300 ft · 1 hour
+            Visible within 50 ft · 1 hour
           </Text>
         </View>
       </ScrollView>

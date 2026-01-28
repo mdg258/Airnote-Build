@@ -84,7 +84,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         <View style={styles.placeHeader}>
           <View style={styles.placeInfo}>
             <Text style={[styles.placeName, { color: theme.text.primary }]}>
-              📍 {group.placeName}
+              {group.notes[0]?.category ? '📍' : '✈️'} {group.placeName}
             </Text>
             {group.placeAddress && (
               <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>

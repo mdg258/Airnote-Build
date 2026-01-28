@@ -4,7 +4,7 @@ export interface Location {
 }
 
 export type Duration = '15m' | '30m' | '1h' | '4h' | '24h';
-export type Radius = 9.14 | 22.86 | 45.72 | 91.44; // 30ft, 75ft, 150ft, 300ft in meters
+export type Radius = 9.14 | 15.24 | 22.86 | 45.72 | 91.44; // 30ft, 50ft, 75ft, 150ft, 300ft in meters
 export type NoteCategory = 'issue' | 'info' | 'lostfound' | 'warning' | 'invite' | 'other';
 
 export interface Note {
