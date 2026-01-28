@@ -23,6 +23,7 @@ interface NoteGroup {
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
   const [userNotes, setUserNotes] = useState<Array<Note & { timeLeft: number }>>([]);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const loadUserNotes = () => {
     const notes = notesService.getUserNotes();
@@ -61,6 +62,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     return Array.from(groups.values());
   }, [userNotes]);
 
+  const toggleGroupCollapse = (placeId: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(placeId)) {
+        newSet.delete(placeId);
+      } else {
+        newSet.add(placeId);
+      }
+      return newSet;
+    });
+  };
+
   const renderEmpty = () => (
     <View style={styles.emptyContent}>
       <Text style={styles.placeholderText}>📝</Text>
@@ -75,13 +88,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     const categoryInfo = (noteCategory: string | undefined) =>
       noteCategory ? LEAVE_NOTE_CATEGORIES.find(cat => cat.id === noteCategory) : null;
 
+    const isCollapsed = collapsedGroups.has(group.placeId);
+
     return (
       <View
         key={group.placeId}
         style={[styles.noteGroup, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
       >
         {/* Place Header */}
-        <View style={styles.placeHeader}>
+        <TouchableOpacity
+          style={[styles.placeHeader, { backgroundColor: theme.primaryDark + '25' }]}
+          onPress={() => toggleGroupCollapse(group.placeId)}
+          activeOpacity={0.7}
+        >
           <View style={styles.placeInfo}>
             <Text style={[styles.placeName, { color: theme.text.primary }]}>
               {group.notes[0]?.category ? '📍' : '✈️'} {group.placeName}
@@ -92,13 +111,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               </Text>
             )}
           </View>
-          <Text style={[styles.noteCount, { color: theme.text.tertiary }]}>
-            {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
-          </Text>
-        </View>
+          <View style={styles.placeHeaderRight}>
+            <Text style={[styles.noteCount, { color: theme.text.tertiary }]}>
+              {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
+            </Text>
+            <Ionicons
+              name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color={theme.text.tertiary}
+            />
+          </View>
+        </TouchableOpacity>
 
         {/* Notes List */}
-        {group.notes.map((note, index) => {
+        {!isCollapsed && group.notes.map((note, index) => {
           const catInfo = categoryInfo(note.category);
           const isLast = index === group.notes.length - 1;
 
@@ -222,17 +248,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   placeName: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '600',
-    lineHeight: 18,
+    lineHeight: 22,
     marginBottom: 2,
   },
   placeAddress: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  placeHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   noteCount: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
   },
   noteItem: {
@@ -258,16 +289,16 @@ const styles = StyleSheet.create({
   },
   noteText: {
     flex: 1,
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 17,
+    lineHeight: 23,
     fontWeight: '400',
   },
   noteMeta: {
     paddingLeft: 26,
   },
   noteMetaText: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 14,
+    lineHeight: 18,
   },
   noteDivider: {
     height: 0.5,

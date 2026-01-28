@@ -11,14 +11,11 @@ import {
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, borderRadius } from '../theme/colors';
+import { spacing } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { Duration, Radius } from '../types/note';
 import { LocationOption } from '../utils/location';
-import {
-  LeaveNoteCategory,
-  LEAVE_NOTE_CATEGORIES,
-} from '../constants/noteTemplates';
+import { LeaveNoteCategory } from '../constants/noteTemplates';
 
 interface LeaveNoteComposerProps {
   onBack: () => void;
@@ -42,7 +39,6 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
 }) => {
   const { theme } = useTheme();
   const [text, setText] = useState('');
-  const [category, setCategory] = useState<LeaveNoteCategory>('info');
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
   const latitude = coordinates?.latitude ?? 37.7749;
@@ -51,11 +47,9 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
 
   const handleSubmit = () => {
     if (text.trim()) {
-      onCreate(text.trim(), '1h', 15.24, category);
+      onCreate(text.trim(), '1h', 15.24, 'info');
     }
   };
-
-  const selectedCategory = LEAVE_NOTE_CATEGORIES.find((c) => c.id === category);
 
   return (
     <View style={styles.container}>
@@ -97,37 +91,6 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           </Text>
         </View>
 
-        {/* Category Pills */}
-        <View style={styles.categoryContainer}>
-          {LEAVE_NOTE_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[
-                styles.categoryPill,
-                {
-                  backgroundColor: category === cat.id ? cat.color + '20' : theme.card,
-                  borderColor: category === cat.id ? cat.color + '40' : theme.cardBorder + '60',
-                },
-              ]}
-              onPress={() => setCategory(cat.id)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.categoryEmoji}>{cat.icon}</Text>
-              <Text
-                style={[
-                  styles.categoryText,
-                  {
-                    color: category === cat.id ? cat.color : theme.text.secondary,
-                    fontWeight: category === cat.id ? '600' : '500',
-                  },
-                ]}
-              >
-                {cat.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
         {/* Location Picker */}
         {locationOptions.length > 1 && (
           <View style={styles.locationSection}>
@@ -138,7 +101,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               activeOpacity={0.7}
             >
               <View style={styles.locationButtonContent}>
-                <Ionicons name="location" size={18} color={selectedCategory?.color || theme.primaryDark} />
+                <Ionicons name="location" size={18} color={theme.primaryDark} />
                 <View style={styles.locationTextContainer}>
                   <Text style={[styles.locationButtonText, { color: theme.text.primary }]} numberOfLines={1}>
                     {selectedLocation?.name || locationName}
@@ -174,8 +137,8 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               <Circle
                 center={{ latitude, longitude }}
                 radius={radius}
-                fillColor={(selectedCategory?.color || '#2ECC71') + '18'}
-                strokeColor={(selectedCategory?.color || '#2ECC71') + 'CC'}
+                fillColor={theme.primaryDark + '18'}
+                strokeColor={theme.primaryDark + 'CC'}
                 strokeWidth={1.5}
               />
             </MapView>
@@ -192,7 +155,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           style={[
             styles.submitButton,
             {
-              backgroundColor: text.trim() ? (selectedCategory?.color || theme.primaryDark) : theme.cardBorder,
+              backgroundColor: text.trim() ? theme.primaryDark : theme.cardBorder,
               opacity: text.trim() ? 1 : 0.5,
             },
           ]}
@@ -237,7 +200,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
                   <Ionicons
                     name={location.id === 'current' ? 'navigate' : 'location'}
                     size={20}
-                    color={selectedLocation?.id === location.id ? (selectedCategory?.color || theme.primaryDark) : theme.text.secondary}
+                    color={selectedLocation?.id === location.id ? theme.primaryDark : theme.text.secondary}
                   />
                   <View style={styles.locationOptionTextContainer}>
                     <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
@@ -251,7 +214,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
                   </View>
                 </View>
                 {selectedLocation?.id === location.id && (
-                  <Ionicons name="checkmark" size={20} color={selectedCategory?.color || theme.primaryDark} />
+                  <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
                 )}
               </TouchableOpacity>
             ))}
@@ -311,27 +274,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: spacing.xs,
     opacity: 0.5,
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  categoryPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 18,
-    borderWidth: 0.5,
-    gap: 6,
-  },
-  categoryEmoji: {
-    fontSize: 15,
-  },
-  categoryText: {
-    fontSize: 13,
-    letterSpacing: -0.1,
   },
   mapSection: {
     gap: spacing.sm,

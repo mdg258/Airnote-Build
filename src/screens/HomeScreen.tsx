@@ -2,17 +2,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
-  FlatList,
   Text,
   ActivityIndicator,
   TouchableOpacity,
   Modal,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Header } from '../components/Header';
 import { LocationChip } from '../components/LocationChip';
-import { NoteCard } from '../components/NoteCard';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
 import { useLocation } from '../hooks/useLocation';
@@ -20,6 +19,16 @@ import { notesService } from '../services/notesService';
 import { Duration, Radius, Note, NoteCategory } from '../types/note';
 import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatDistance, formatTimeLeft } from '../utils/location';
+import { LEAVE_NOTE_CATEGORIES } from '../constants/noteTemplates';
+
+interface NoteGroup {
+  placeId: string;
+  placeName: string;
+  placeAddress?: string;
+  notes: Array<Note & { distance: number; timeLeft: number }>;
+  closestDistance: number;
+}
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -33,6 +42,7 @@ export const HomeScreen: React.FC = () => {
   const [sortMode, setSortMode] = useState<'closest' | 'ending-soon'>('closest');
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -79,8 +89,8 @@ export const HomeScreen: React.FC = () => {
     return Array.from(locationMap.values());
   }, [nearbyNotes]);
 
-  // Filter and sort notes
-  const displayedNotes = useMemo(() => {
+  // Group notes by place and sort
+  const noteGroups = useMemo(() => {
     let filtered = nearbyNotes;
 
     // Filter by selected location
@@ -88,17 +98,50 @@ export const HomeScreen: React.FC = () => {
       filtered = filtered.filter(note => note.placeId === selectedLocation);
     }
 
-    // Sort based on selected mode
+    // Group by place
+    const groups = new Map<string, NoteGroup>();
+    filtered.forEach(note => {
+      const key = note.placeId || note.placeName || 'unknown';
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          placeId: key,
+          placeName: note.placeName || 'Unknown Location',
+          placeAddress: note.placeAddress,
+          notes: [],
+          closestDistance: note.distance,
+        });
+      }
+
+      const group = groups.get(key)!;
+      group.notes.push(note);
+      if (note.distance < group.closestDistance) {
+        group.closestDistance = note.distance;
+      }
+    });
+
+    // Convert to array and sort groups
+    const groupArray = Array.from(groups.values());
+
     if (sortMode === 'ending-soon') {
-      return [...filtered].sort((a, b) => a.timeLeft - b.timeLeft);
-    } else {
-      return [...filtered].sort((a, b) => {
-        // Boost score if expiring within 1 hour (3600000ms)
-        const aBoost = a.timeLeft < 3600000 ? -50 : 0;
-        const bBoost = b.timeLeft < 3600000 ? -50 : 0;
-        return (a.distance + aBoost) - (b.distance + bBoost);
+      // Sort groups by earliest expiring note
+      groupArray.forEach(group => {
+        group.notes.sort((a, b) => a.timeLeft - b.timeLeft);
       });
+      groupArray.sort((a, b) => a.notes[0].timeLeft - b.notes[0].timeLeft);
+    } else {
+      // Sort groups by closest distance, then sort notes within each group
+      groupArray.forEach(group => {
+        group.notes.sort((a, b) => {
+          const aBoost = a.timeLeft < 3600000 ? -50 : 0;
+          const bBoost = b.timeLeft < 3600000 ? -50 : 0;
+          return (a.distance + aBoost) - (b.distance + bBoost);
+        });
+      });
+      groupArray.sort((a, b) => a.closestDistance - b.closestDistance);
     }
+
+    return groupArray;
   }, [nearbyNotes, selectedLocation, sortMode]);
 
   const handleCreateNote = (
@@ -200,6 +243,86 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 
+  const toggleGroupCollapse = (placeId: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(placeId)) {
+        newSet.delete(placeId);
+      } else {
+        newSet.add(placeId);
+      }
+      return newSet;
+    });
+  };
+
+  const renderNoteGroup = (group: NoteGroup) => {
+    const categoryInfo = (noteCategory: string | undefined) =>
+      noteCategory ? LEAVE_NOTE_CATEGORIES.find(cat => cat.id === noteCategory) : null;
+
+    const isCollapsed = collapsedGroups.has(group.placeId);
+
+    return (
+      <View
+        key={group.placeId}
+        style={[styles.noteGroup, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+      >
+        {/* Place Header */}
+        <TouchableOpacity
+          style={[styles.placeHeader, { backgroundColor: theme.primaryDark + '25' }]}
+          onPress={() => toggleGroupCollapse(group.placeId)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.placeInfo}>
+            <Text style={[styles.placeName, { color: theme.text.primary }]}>
+              {group.notes[0]?.category ? '📍' : '✈️'} {group.placeName}
+            </Text>
+            {group.placeAddress && (
+              <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
+                {group.placeAddress}
+              </Text>
+            )}
+          </View>
+          <View style={styles.placeMetaContainer}>
+            <Text style={[styles.placeDistance, { color: theme.primaryDark }]}>
+              {formatDistance(group.closestDistance)}
+            </Text>
+            <Text style={[styles.noteCount, { color: theme.text.tertiary }]}>
+              {group.notes.length} {group.notes.length === 1 ? 'note' : 'notes'}
+            </Text>
+            <Ionicons
+              name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color={theme.text.tertiary}
+              style={{ marginTop: 2 }}
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* Notes List */}
+        {!isCollapsed && group.notes.map((note, index) => {
+          const catInfo = categoryInfo(note.category);
+          const isLast = index === group.notes.length - 1;
+
+          return (
+            <View key={note.id}>
+              <View style={styles.noteItem}>
+                <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                  {note.text}
+                </Text>
+                <View style={styles.noteMeta}>
+                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                    {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+                  </Text>
+                </View>
+              </View>
+              {!isLast && <View style={[styles.noteDivider, { backgroundColor: theme.cardBorder }]} />}
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderEmptyState = () => {
     if (location.isLoading) {
       return (
@@ -232,21 +355,18 @@ export const HomeScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <Header />
       <LocationChip placeName={location.placeName} hasPermission={location.hasPermission} />
-      <FlatList
-        data={displayedNotes}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NoteCard
-            note={item}
-            timeLeft={item.timeLeft}
-            showLocation={true}
-          />
-        )}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={renderFilterChips}
-        ListEmptyComponent={renderEmptyState}
-        showsVerticalScrollIndicator={false}
-      />
+      {renderFilterChips()}
+      {noteGroups.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {noteGroups.map(renderNoteGroup)}
+        </ScrollView>
+      )}
       <FloatingActionButton onPress={() => setModalVisible(true)} />
       <CreateNoteModal
         visible={modalVisible}
@@ -312,10 +432,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  listContent: {
-    paddingTop: 6,
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: spacing.sm,
     paddingBottom: 100,
-    flexGrow: 1,
+    gap: spacing.md,
   },
   emptyState: {
     flex: 1,
@@ -324,18 +447,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   emptyIcon: {
-    fontSize: 56,
+    fontSize: 64,
     marginBottom: spacing.md,
     opacity: 0.5,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '500',
     textAlign: 'center',
     marginBottom: 6,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
     opacity: 0.6,
   },
@@ -353,12 +476,90 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
   },
   chipText: {
-    fontSize: 13,
+    fontSize: 14,
   },
   chipWithIcon: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  noteGroup: {
+    marginHorizontal: spacing.md,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    overflow: 'hidden',
+  },
+  placeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    gap: spacing.sm,
+  },
+  placeInfo: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 23,
+    marginBottom: 2,
+  },
+  placeAddress: {
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  placeMetaContainer: {
+    alignItems: 'flex-end',
+  },
+  placeDistance: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  noteCount: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  noteItem: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  noteContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  noteCategoryBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  noteCategoryEmoji: {
+    fontSize: 12,
+  },
+  noteText: {
+    flex: 1,
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: '400',
+  },
+  noteMeta: {
+    paddingLeft: 26,
+  },
+  noteMetaText: {
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  noteDivider: {
+    height: 0.5,
+    marginLeft: spacing.md,
   },
   modalOverlay: {
     flex: 1,
