@@ -8,13 +8,17 @@ import {
   ScrollView,
   SafeAreaView,
   Animated,
+  Linking,
+  Platform,
 } from 'react-native';
+import MapView, { Marker, Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { PlaceGroup, Note } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatTimeLeft } from '../utils/location';
 import { commentsService } from '../services/commentsService';
+import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 
 interface PlaceNotesModalProps {
   visible: boolean;
@@ -33,7 +37,8 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
   userLongitude,
   onNotePress,
 }) => {
-  const { theme, textScale } = useTheme();
+  const { theme, textScale, themeMode } = useTheme();
+  const isDark = themeMode === 'dark';
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
   const noteOpacities = useRef<Animated.Value[]>([]).current;
 
@@ -90,6 +95,17 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
     return timeStr.replace(' left', '');
   };
 
+  const handleGetDirections = () => {
+    if (!placeGroup) return;
+
+    const { latitude, longitude } = placeGroup;
+    const url = Platform.OS === 'ios'
+      ? `maps://app?daddr=${latitude},${longitude}`
+      : `geo:${latitude},${longitude}`;
+
+    Linking.openURL(url);
+  };
+
   return (
     <Modal
       visible={visible}
@@ -122,6 +138,68 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
           {/* Green Divider */}
           <View style={styles.dividerContainer}>
             <View style={[styles.divider, { backgroundColor: theme.primaryDark }]} />
+          </View>
+
+          {/* Small Location Map */}
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              region={{
+                latitude: placeGroup.latitude,
+                longitude: placeGroup.longitude,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005,
+              }}
+              mapType="mutedStandard"
+              customMapStyle={isDark ? darkMapStyle : lightMapStyle}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              pitchEnabled={false}
+              rotateEnabled={false}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+              showsCompass={false}
+              showsScale={false}
+              showsPointsOfInterest={false}
+              showsBuildings={false}
+            >
+              {/* Place location marker */}
+              <Marker
+                coordinate={{
+                  latitude: placeGroup.latitude,
+                  longitude: placeGroup.longitude,
+                }}
+              >
+                <View style={[styles.marker, { backgroundColor: theme.primaryDark }]} />
+              </Marker>
+
+              {/* Show radius circles for all notes at this place */}
+              {placeGroup.notes.map((note) => (
+                <Circle
+                  key={note.id}
+                  center={{
+                    latitude: note.location.latitude,
+                    longitude: note.location.longitude,
+                  }}
+                  radius={note.radius}
+                  fillColor={theme.primaryDark + '15'}
+                  strokeColor={theme.primaryDark + '30'}
+                  strokeWidth={1}
+                />
+              ))}
+            </MapView>
+
+            {/* Get Directions Button */}
+            <TouchableOpacity
+              style={[styles.directionsButton, { backgroundColor: theme.card }]}
+              onPress={handleGetDirections}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="navigate" size={16} color={theme.primaryDark} />
+              <Text style={[styles.directionsText, { color: theme.text.primary, fontSize: 13 * textScale }]}>
+                Directions
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Notes List - Flat, text-forward */}
@@ -259,5 +337,47 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: spacing.xl,
+  },
+  mapContainer: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    height: 140,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  map: {
+    flex: 1,
+  },
+  marker: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  directionsButton: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    right: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  directionsText: {
+    fontSize: 13,
+    fontWeight: '500',
+    letterSpacing: -0.1,
   },
 });
