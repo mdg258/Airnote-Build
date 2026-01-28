@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { spacing } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -18,7 +18,11 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPr
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={[styles.plusIcon, { color: theme.text.inverse }]}>+</Text>
+      <Image
+        source={require('../../assets/logo-transparent-bg.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
     </TouchableOpacity>
   );
 };
@@ -38,12 +42,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  plusIcon: {
-    fontSize: 52,
-    fontWeight: '700',
-    lineHeight: 52,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  logo: {
+    width: 50,
+    height: 50,
   },
 });

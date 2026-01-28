@@ -274,7 +274,7 @@ export const HomeScreen: React.FC = () => {
         >
           <View style={styles.placeInfo}>
             <Text style={[styles.placeName, { color: theme.text.primary }]}>
-              {group.notes[0]?.category ? '📍' : '✈️'} {group.placeName}
+              📍 {group.placeName}
             </Text>
             {group.placeAddress && (
               <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
@@ -308,7 +308,7 @@ export const HomeScreen: React.FC = () => {
               <View style={styles.noteItem}>
                 <View style={styles.noteContent}>
                   <Text style={[styles.noteText, { color: theme.text.primary }]}>
-                    {note.text}
+                    {!note.category && '✈️ '}{note.text}
                   </Text>
                 </View>
                 <View style={styles.noteMeta}>

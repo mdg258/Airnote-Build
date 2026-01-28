@@ -1,5 +1,7 @@
 # To-Do List
 
+- **Add AI SUMMARY**
+
 - change location back so that users can only tag a place within a very small radius (100m)
 
 <br>

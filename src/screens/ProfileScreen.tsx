@@ -99,7 +99,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         >
           <View style={styles.placeInfo}>
             <Text style={[styles.placeName, { color: theme.text.primary }]}>
-              {group.notes[0]?.category ? '📍' : '✈️'} {group.placeName}
+              📍 {group.placeName}
             </Text>
             {group.placeAddress && (
               <Text style={[styles.placeAddress, { color: theme.text.tertiary }]} numberOfLines={1}>
@@ -127,7 +127,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             <View key={note.id}>
               <View style={styles.noteItem}>
                 <Text style={[styles.noteText, { color: theme.text.primary }]}>
-                  {note.text}
+                  {!note.category && '✈️ '}{note.text}
                 </Text>
                 <View style={styles.noteMeta}>
                   <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
