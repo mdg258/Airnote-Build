@@ -8,8 +8,8 @@ export const lightTheme = {
   // Semantic colors
   text: {
     primary: '#1A1A1A',
-    secondary: '#666666',
-    tertiary: '#999999',
+    secondary: '#444444',
+    tertiary: '#5A5A5A',
     inverse: '#FFFFFF',
   },
 
@@ -33,8 +33,8 @@ export const darkTheme = {
   // Semantic colors
   text: {
     primary: '#FFFFFF',
-    secondary: '#B3B3B3',
-    tertiary: '#808080',
+    secondary: '#D4D4D4',
+    tertiary: '#ABABAB',
     inverse: '#1A1A1A',
   },
 

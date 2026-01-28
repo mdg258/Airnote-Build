@@ -31,21 +31,37 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
   };
 
   React.useEffect(() => {
-    // Subtle floating animation for Send
-    Animated.loop(
+    // Wait for modal to appear, then drift up and settle (the magic hint)
+    setTimeout(() => {
       Animated.sequence([
         Animated.timing(translateSend, {
-          toValue: -3,
-          duration: 2000,
+          toValue: -8,
+          duration: 450,
           useNativeDriver: true,
         }),
         Animated.timing(translateSend, {
           toValue: 0,
-          duration: 2000,
+          duration: 650,
           useNativeDriver: true,
         }),
-      ])
-    ).start();
+      ]).start(() => {
+        // Then start the very subtle continuous floating
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(translateSend, {
+              toValue: -3,
+              duration: 2500,
+              useNativeDriver: true,
+            }),
+            Animated.timing(translateSend, {
+              toValue: 0,
+              duration: 2500,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      });
+    }, 250);
   }, []);
 
   return (
@@ -61,7 +77,28 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
       )}
 
       <View style={styles.content}>
-        {/* Send - Light, Airborne */}
+        {/* Leave - Grounded, Default */}
+        <Animated.View style={[styles.choiceWrapper, styles.leaveWrapper, { opacity: opacityLeave }]}>
+          <TouchableOpacity
+            style={styles.choice}
+            onPress={() => onSelectMode('leave')}
+            onPressIn={() => handlePressIn(opacityLeave)}
+            onPressOut={() => handlePressOut(opacityLeave)}
+            activeOpacity={1}
+          >
+            <Text style={[styles.leaveText, { color: theme.text.primary, fontSize: 52 * textScale }]}>
+              Leave
+            </Text>
+            <Text style={[styles.leaveHint, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
+              Pin a note to this place
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Divider */}
+        <View style={[styles.divider, { backgroundColor: theme.primaryDark }]} />
+
+        {/* Send - Light, Intentional */}
         <Animated.View
           style={[
             styles.choiceWrapper,
@@ -76,29 +113,11 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
             onPressOut={() => handlePressOut(opacitySend)}
             activeOpacity={1}
           >
-            <Text style={[styles.sendText, { color: theme.text.primary, fontSize: 44 * textScale }]}>
+            <Text style={[styles.sendText, { color: theme.text.primary, fontSize: 38 * textScale }]}>
               Send
             </Text>
-            <Text style={[styles.sendHint, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
-              Broadcast a message nearby
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Leave - Grounded, Stable */}
-        <Animated.View style={[styles.choiceWrapper, styles.leaveWrapper, { opacity: opacityLeave }]}>
-          <TouchableOpacity
-            style={styles.choice}
-            onPress={() => onSelectMode('leave')}
-            onPressIn={() => handlePressIn(opacityLeave)}
-            onPressOut={() => handlePressOut(opacityLeave)}
-            activeOpacity={1}
-          >
-            <Text style={[styles.leaveText, { color: theme.text.primary, fontSize: 48 * textScale }]}>
-              Leave
-            </Text>
-            <Text style={[styles.leaveHint, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
-              Pin a note to this place
+            <Text style={[styles.sendHint, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+              Broadcast nearby
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -130,6 +149,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     gap: spacing.xl * 2,
+  },
+  divider: {
+    width: 40,
+    height: 1,
+    alignSelf: 'center',
+    opacity: 0.3,
   },
   choiceWrapper: {
     alignItems: 'center',
