@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ import { Duration, Radius, Note, NoteCategory } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistance, formatTimeLeft } from '../utils/location';
+import { MapPulseAnimation } from '../components/MapPulseAnimation';
 
 type SortMode = 'distance' | 'time' | 'comments';
 
@@ -40,6 +42,34 @@ export const HomeScreen: React.FC = () => {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [pinnedNoteIds, setPinnedNoteIds] = useState<Set<string>>(new Set());
+  const [showOpeningAnimation, setShowOpeningAnimation] = useState(false);
+  const hasAnimated = useRef(false);
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+
+  // Opening animation on first load
+  useEffect(() => {
+    if (!location.latitude || !location.longitude || hasAnimated.current) return;
+
+    hasAnimated.current = true;
+    setShowOpeningAnimation(true);
+
+    // Start animation immediately
+    const timer = setTimeout(() => {
+      // Crossfade content in as pulse completes
+      Animated.sequence([
+        Animated.delay(850), // Start crossfade while pulse is finishing
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 450,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowOpeningAnimation(false);
+      });
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [location.latitude, location.longitude]);
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -286,8 +316,9 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-      {/* Simplified Header */}
-      <View style={styles.header}>
+      <Animated.View style={[styles.contentWrapper, { opacity: contentOpacity }]}>
+        {/* Simplified Header */}
+        <View style={styles.header}>
         <Text style={[styles.appTitle, { color: theme.text.primary, fontSize: 36 * textScale }]}>
           airnote
         </Text>
@@ -504,7 +535,11 @@ export const HomeScreen: React.FC = () => {
         </ScrollView>
       )}
 
-      <FloatingActionButton onPress={() => setModalVisible(true)} />
+        <FloatingActionButton onPress={() => setModalVisible(true)} />
+      </Animated.View>
+
+      {/* Opening pulse animation */}
+      {showOpeningAnimation && <MapPulseAnimation isVisible={true} />}
 
       <CreateNoteModal
         visible={modalVisible}
@@ -531,6 +566,9 @@ export const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  contentWrapper: {
     flex: 1,
   },
   header: {
