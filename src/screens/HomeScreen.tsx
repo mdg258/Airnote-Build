@@ -39,6 +39,7 @@ export const HomeScreen: React.FC = () => {
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [pinnedNoteIds, setPinnedNoteIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -84,6 +85,18 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
+  const togglePinNote = (noteId: string) => {
+    setPinnedNoteIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(noteId)) {
+        newSet.delete(noteId);
+      } else {
+        newSet.add(noteId);
+      }
+      return newSet;
+    });
+  };
+
   // Get unique places with notes
   const placesWithNotes = useMemo(() => {
     const placeMap = new Map<string, { id: string; name: string; count: number }>();
@@ -118,6 +131,14 @@ export const HomeScreen: React.FC = () => {
     }
 
     return filtered.sort((a, b) => {
+      // Pinned notes always come first
+      const aIsPinned = pinnedNoteIds.has(a.id);
+      const bIsPinned = pinnedNoteIds.has(b.id);
+
+      if (aIsPinned && !bIsPinned) return -1;
+      if (!aIsPinned && bIsPinned) return 1;
+
+      // If both pinned or both not pinned, sort by selected mode
       if (sortMode === 'distance') {
         // Boost notes that are expiring soon (< 1 hour)
         const aBoost = a.timeLeft < 3600000 ? -200 : 0;
@@ -132,7 +153,7 @@ export const HomeScreen: React.FC = () => {
         return bCount - aCount; // Most comments first
       }
     });
-  }, [nearbyNotes, sortMode, commentCounts, selectedPlaceId]);
+  }, [nearbyNotes, sortMode, commentCounts, selectedPlaceId, pinnedNoteIds]);
 
   const handleCreateNote = (
     text: string,
@@ -163,6 +184,7 @@ export const HomeScreen: React.FC = () => {
   const renderNoteCard = (note: Note & { distance: number; timeLeft: number }, index: number) => {
     const commentCount = commentCounts.get(note.id) || 0;
     const isExpiringSoon = note.timeLeft < 3600000; // Less than 1 hour
+    const isPinned = pinnedNoteIds.has(note.id);
 
     return (
       <TouchableOpacity
@@ -172,22 +194,30 @@ export const HomeScreen: React.FC = () => {
           setSelectedNote(note);
           setNoteDetailModalVisible(true);
         }}
+        onLongPress={() => togglePinNote(note.id)}
         activeOpacity={0.7}
       >
-        {/* Message Text - Primary */}
-        <Text
-          style={[
-            styles.noteText,
-            {
-              color: theme.text.primary,
-              fontSize: 19 * textScale,
-              opacity: isExpiringSoon ? 1 : 0.95,
-              fontWeight: isExpiringSoon ? '500' : '400',
-            }
-          ]}
-        >
-          {note.text}
-        </Text>
+        <View style={styles.noteContent}>
+          {/* Message Text - Primary */}
+          <Text
+            style={[
+              styles.noteText,
+              {
+                color: theme.text.primary,
+                fontSize: 19 * textScale,
+                opacity: isExpiringSoon ? 1 : 0.95,
+                fontWeight: isExpiringSoon ? '500' : '400',
+              }
+            ]}
+          >
+            {note.text}
+          </Text>
+
+          {/* Pin Icon */}
+          {isPinned && (
+            <Ionicons name="pin" size={16} color={theme.primaryDark} style={styles.pinIcon} />
+          )}
+        </View>
 
         {/* Metadata Row - Secondary */}
         <View style={styles.metadataContainer}>
@@ -552,12 +582,22 @@ const styles = StyleSheet.create({
     height: 1,
     opacity: 0.2,
   },
+  noteContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   noteText: {
+    flex: 1,
     fontSize: 19,
     lineHeight: 26,
     fontWeight: '400',
     letterSpacing: -0.3,
-    marginBottom: spacing.sm,
+  },
+  pinIcon: {
+    marginTop: 2,
+    opacity: 0.8,
   },
   metadataContainer: {
     gap: 4,
