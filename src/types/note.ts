@@ -20,6 +20,7 @@ export interface Note {
   duration: Duration;
   userId: string; // ID of the user who created this note
   category?: NoteCategory; // Category for leave notes
+  isPrivate?: boolean; // Flag for private notes (never posted/shared)
 }
 
 export interface CreateNoteInput {
@@ -31,6 +32,7 @@ export interface CreateNoteInput {
   radius: Radius;
   duration: Duration;
   category?: NoteCategory;
+  isPrivate?: boolean;
 }
 
 export interface Comment {

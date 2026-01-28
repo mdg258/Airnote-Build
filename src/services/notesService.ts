@@ -27,6 +27,7 @@ const generateId = (): string => {
 export const notesService = {
   /**
    * Create a new note
+   * Note: Use privateNotesService.createPrivateNote() for private notes instead
    */
   createNote: (input: CreateNoteInput): Note => {
     const now = new Date();
@@ -45,6 +46,7 @@ export const notesService = {
       duration: input.duration,
       userId: CURRENT_USER_ID,
       category: input.category,
+      isPrivate: input.isPrivate || false, // Default to public
     };
 
     notes.push(note);
@@ -56,6 +58,7 @@ export const notesService = {
    * Filters by:
    * - Distance from user location must be <= note's radius
    * - Note must not be expired
+   * - Note must not be private
    */
   getNearbyNotes: (
     userLatitude: number,
@@ -65,6 +68,9 @@ export const notesService = {
 
     return notes
       .filter((note) => {
+        // Never show private notes in public queries
+        if (note.isPrivate) return false;
+
         // Remove expired notes
         if (now > note.expiresAt) return false;
 
@@ -103,6 +109,7 @@ export const notesService = {
    * Filters by:
    * - Distance from user location must be <= maxDistance
    * - Note must not be expired
+   * - Note must not be private
    * Does NOT filter by note's individual radius (unlike getNearbyNotes)
    */
   getAllNotesWithinDistance: (
@@ -114,6 +121,9 @@ export const notesService = {
 
     return notes
       .filter((note) => {
+        // Never show private notes in public queries
+        if (note.isPrivate) return false;
+
         // Remove expired notes
         if (now > note.expiresAt) return false;
 
@@ -149,15 +159,19 @@ export const notesService = {
 
   /**
    * Get notes created by the current user
-   * Filters out expired notes
+   * Filters out expired notes and private notes (use privateNotesService for those)
    */
   getUserNotes: (): Array<Note & { timeLeft: number }> => {
     const now = new Date();
 
     return notes
       .filter((note) => {
-        // Only show user's own notes that haven't expired
-        return note.userId === CURRENT_USER_ID && now <= note.expiresAt;
+        // Only show user's own PUBLIC notes that haven't expired
+        return (
+          note.userId === CURRENT_USER_ID &&
+          now <= note.expiresAt &&
+          !note.isPrivate
+        );
       })
       .map((note) => {
         const timeLeft = note.expiresAt.getTime() - now.getTime();

@@ -3,13 +3,13 @@ import { lightTheme, darkTheme } from '../theme/colors';
 
 type Theme = typeof lightTheme;
 type ThemeMode = 'light' | 'dark';
-type TextSize = 'small' | 'medium' | 'large' | 'extra-large';
+type TextSize = 'medium' | 'large' | 'extra-large' | 'extra-extra-large';
 
 const TEXT_SIZE_SCALES: Record<TextSize, number> = {
-  'small': 0.9,
   'medium': 1.0,
-  'large': 1.1,
-  'extra-large': 1.2,
+  'large': 1.15,
+  'extra-large': 1.3,
+  'extra-extra-large': 1.5,
 };
 
 interface ThemeContextType {
@@ -25,7 +25,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
-  const [textSize, setTextSize] = useState<TextSize>('medium');
+  const [textSize, setTextSize] = useState<TextSize>('large');
 
   const theme = themeMode === 'light' ? lightTheme : darkTheme;
   const textScale = TEXT_SIZE_SCALES[textSize];

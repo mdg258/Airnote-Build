@@ -4,10 +4,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../theme/colors';
 
 const TEXT_SIZES = [
-  { id: 'small', label: 'A', scale: 0.85 },
   { id: 'medium', label: 'A', scale: 1.0 },
   { id: 'large', label: 'A', scale: 1.15 },
   { id: 'extra-large', label: 'A', scale: 1.3 },
+  { id: 'extra-extra-large', label: 'A', scale: 1.5 },
 ] as const;
 
 export const TextSizeControl: React.FC = () => {

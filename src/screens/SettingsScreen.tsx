@@ -67,7 +67,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
         >
           <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Settings</Text>
+        <Text style={[styles.title, { color: theme.text.primary, fontSize: Math.min(34 * textScale, 42) }]}>Settings</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
