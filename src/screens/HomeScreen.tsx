@@ -130,11 +130,11 @@ export const HomeScreen: React.FC = () => {
   const renderFilterChips = () => (
     <View style={styles.filterContainer}>
       <TouchableOpacity
-        style={[styles.chip, { backgroundColor: theme.background, borderColor: theme.primaryDark }]}
+        style={[styles.chip, { backgroundColor: theme.card, borderColor: theme.text.tertiary + '20' }]}
         onPress={() => setRadius(radius === 91 ? 1609 : 91)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.chipText, { color: theme.text.primary }]}>
+        <Text style={[styles.chipText, { color: theme.text.secondary }]}>
           {radius === 91 ? 'Here · 300 ft' : 'Nearby · 1 mi'}
         </Text>
       </TouchableOpacity>
@@ -143,8 +143,8 @@ export const HomeScreen: React.FC = () => {
         style={[
           styles.chip,
           {
-            backgroundColor: sortMode === 'closest' ? theme.primaryDark : theme.background,
-            borderColor: theme.primaryDark,
+            backgroundColor: sortMode === 'closest' ? theme.primaryDark : theme.card,
+            borderColor: sortMode === 'closest' ? theme.primaryDark : theme.text.tertiary + '20',
           },
         ]}
         onPress={() => setSortMode(sortMode === 'closest' ? 'ending-soon' : 'closest')}
@@ -154,8 +154,8 @@ export const HomeScreen: React.FC = () => {
           style={[
             styles.chipText,
             {
-              color: sortMode === 'closest' ? '#FFFFFF' : theme.text.primary,
-              fontWeight: sortMode === 'closest' ? '600' : '400',
+              color: sortMode === 'closest' ? '#FFFFFF' : theme.text.secondary,
+              fontWeight: sortMode === 'closest' ? '500' : '400',
             },
           ]}
         >
@@ -168,8 +168,8 @@ export const HomeScreen: React.FC = () => {
           style={[
             styles.chip,
             {
-              backgroundColor: selectedLocation ? theme.primaryDark : theme.background,
-              borderColor: theme.primaryDark,
+              backgroundColor: selectedLocation ? theme.primaryDark : theme.card,
+              borderColor: selectedLocation ? theme.primaryDark : theme.text.tertiary + '20',
             },
           ]}
           onPress={() => setLocationPickerVisible(true)}
@@ -180,8 +180,8 @@ export const HomeScreen: React.FC = () => {
               style={[
                 styles.chipText,
                 {
-                  color: selectedLocation ? '#FFFFFF' : theme.text.primary,
-                  fontWeight: selectedLocation ? '600' : '400',
+                  color: selectedLocation ? '#FFFFFF' : theme.text.secondary,
+                  fontWeight: selectedLocation ? '500' : '400',
                 },
               ]}
             >
@@ -191,8 +191,8 @@ export const HomeScreen: React.FC = () => {
             </Text>
             <Ionicons
               name="chevron-down"
-              size={16}
-              color={selectedLocation ? '#FFFFFF' : theme.text.primary}
+              size={14}
+              color={selectedLocation ? '#FFFFFF' : theme.text.secondary}
             />
           </View>
         </TouchableOpacity>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingTop: spacing.sm,
+    paddingTop: 6,
     paddingBottom: 100,
     flexGrow: 1,
   },
@@ -324,32 +324,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
+    fontSize: 56,
+    marginBottom: spacing.md,
+    opacity: 0.5,
   },
   emptyText: {
-    ...typography.heading,
+    fontSize: 16,
+    fontWeight: '500',
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 6,
   },
   emptySubtext: {
-    ...typography.body,
+    fontSize: 14,
     textAlign: 'center',
+    opacity: 0.6,
   },
   filterContainer: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: 6,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 8,
+    marginBottom: 4,
   },
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: borderRadius.full,
-    borderWidth: 1,
+    borderWidth: 0.5,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   chipWithIcon: {
     flexDirection: 'row',
