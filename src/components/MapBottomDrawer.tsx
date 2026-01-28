@@ -22,15 +22,11 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 interface MapBottomDrawerProps {
   placeGroups: PlaceGroup[];
   onPlacePress: (place: PlaceGroup) => void;
-  sortMode: 'distance' | 'recent';
-  onSortChange: (mode: 'distance' | 'recent') => void;
 }
 
 export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
   placeGroups,
   onPlacePress,
-  sortMode,
-  onSortChange,
 }) => {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -41,11 +37,8 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
   }, []);
 
   const sortedPlaceGroups = React.useMemo(() => {
-    if (sortMode === 'distance') {
-      return [...placeGroups].sort((a, b) => a.closestDistance - b.closestDistance);
-    }
-    return placeGroups;
-  }, [placeGroups, sortMode]);
+    return [...placeGroups].sort((a, b) => a.closestDistance - b.closestDistance);
+  }, [placeGroups]);
 
   const renderPlaceItem = useCallback(
     ({ item }: { item: PlaceGroup }) => (
@@ -107,34 +100,6 @@ export const MapBottomDrawer: React.FC<MapBottomDrawerProps> = ({
 
       {isExpanded && (
         <>
-          <View style={styles.filterContainer}>
-            <View style={[styles.chip, { backgroundColor: theme.background }]}>
-              <Text style={[styles.chipText, { color: theme.text.secondary }]}>Within 1 mi</Text>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: sortMode === 'distance' ? theme.primaryDark : theme.background,
-                },
-              ]}
-              onPress={() => onSortChange(sortMode === 'distance' ? 'recent' : 'distance')}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  {
-                    color: sortMode === 'distance' ? '#FFFFFF' : theme.text.secondary,
-                    fontWeight: sortMode === 'distance' ? '600' : '400',
-                  },
-                ]}
-              >
-                {sortMode === 'distance' ? 'Closest' : 'Recent'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           <FlatList
             data={sortedPlaceGroups}
             renderItem={renderPlaceItem}

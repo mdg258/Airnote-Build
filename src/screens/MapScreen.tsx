@@ -30,7 +30,6 @@ export const MapScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [sortMode, setSortMode] = useState<'distance' | 'recent'>('distance');
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
@@ -112,10 +111,6 @@ export const MapScreen: React.FC = () => {
     }, 350);
   }, []);
 
-  // Handle sort change
-  const handleSortChange = useCallback((mode: 'distance' | 'recent') => {
-    setSortMode(mode);
-  }, []);
 
   // Loading state
   if (location.isLoading) {
@@ -220,8 +215,6 @@ export const MapScreen: React.FC = () => {
           <MapBottomDrawer
             placeGroups={placeGroups}
             onPlacePress={handleDrawerPlacePress}
-            sortMode={sortMode}
-            onSortChange={handleSortChange}
           />
         )}
       </View>

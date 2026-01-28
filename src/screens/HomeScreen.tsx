@@ -6,20 +6,20 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { Header } from '../components/Header';
 import { LocationChip } from '../components/LocationChip';
 import { NoteCard } from '../components/NoteCard';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
-import { PlaceGroupCard } from '../components/PlaceGroupCard';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
-import { Duration, Radius, Note, PlaceGroup } from '../types/note';
+import { Duration, Radius, Note } from '../types/note';
 import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
-import { groupNotesByPlace } from '../utils/location';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -31,6 +31,8 @@ export const HomeScreen: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [radius, setRadius] = useState<91 | 1609>(91); // 300 ft or 1 mile
   const [sortMode, setSortMode] = useState<'closest' | 'ending-soon'>('closest');
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -63,31 +65,41 @@ export const HomeScreen: React.FC = () => {
     setNearbyNotes(notes);
   };
 
-  const placeGroups = useMemo(() => {
-    const groups = groupNotesByPlace(nearbyNotes, radius);
+  // Get unique locations
+  const uniqueLocations = useMemo(() => {
+    const locationMap = new Map<string, { id: string; name: string }>();
+    nearbyNotes.forEach(note => {
+      if (note.placeId && note.placeName && !locationMap.has(note.placeId)) {
+        locationMap.set(note.placeId, {
+          id: note.placeId,
+          name: note.placeName,
+        });
+      }
+    });
+    return Array.from(locationMap.values());
+  }, [nearbyNotes]);
 
-    // Sort groups based on selected mode
+  // Filter and sort notes
+  const displayedNotes = useMemo(() => {
+    let filtered = nearbyNotes;
+
+    // Filter by selected location
+    if (selectedLocation) {
+      filtered = filtered.filter(note => note.placeId === selectedLocation);
+    }
+
+    // Sort based on selected mode
     if (sortMode === 'ending-soon') {
-      // Sort by soonest expiration (shortest time left)
-      return groups.sort((a, b) => {
-        const aMinTime = Math.min(...a.notes.map(n => n.timeLeft));
-        const bMinTime = Math.min(...b.notes.map(n => n.timeLeft));
-        return aMinTime - bMinTime;
-      });
+      return [...filtered].sort((a, b) => a.timeLeft - b.timeLeft);
     } else {
-      // Sort by closest distance (with slight boost for expiring soon)
-      return groups.sort((a, b) => {
-        const aMinTime = Math.min(...a.notes.map(n => n.timeLeft));
-        const bMinTime = Math.min(...b.notes.map(n => n.timeLeft));
-
+      return [...filtered].sort((a, b) => {
         // Boost score if expiring within 1 hour (3600000ms)
-        const aBoost = aMinTime < 3600000 ? -50 : 0; // Subtract 50m from distance
-        const bBoost = bMinTime < 3600000 ? -50 : 0;
-
-        return (a.closestDistance + aBoost) - (b.closestDistance + bBoost);
+        const aBoost = a.timeLeft < 3600000 ? -50 : 0;
+        const bBoost = b.timeLeft < 3600000 ? -50 : 0;
+        return (a.distance + aBoost) - (b.distance + bBoost);
       });
     }
-  }, [nearbyNotes, radius, sortMode]);
+  }, [nearbyNotes, selectedLocation, sortMode]);
 
   const handleCreateNote = (
     text: string,
@@ -148,6 +160,41 @@ export const HomeScreen: React.FC = () => {
           {sortMode === 'closest' ? 'Closest' : 'Ending Soon'}
         </Text>
       </TouchableOpacity>
+
+      {uniqueLocations.length > 0 && (
+        <TouchableOpacity
+          style={[
+            styles.chip,
+            {
+              backgroundColor: selectedLocation ? theme.primaryDark : theme.background,
+              borderColor: theme.primaryDark,
+            },
+          ]}
+          onPress={() => setLocationPickerVisible(true)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.chipWithIcon}>
+            <Text
+              style={[
+                styles.chipText,
+                {
+                  color: selectedLocation ? '#FFFFFF' : theme.text.primary,
+                  fontWeight: selectedLocation ? '600' : '400',
+                },
+              ]}
+            >
+              {selectedLocation
+                ? uniqueLocations.find(l => l.id === selectedLocation)?.name || 'Location'
+                : 'All Locations'}
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={16}
+              color={selectedLocation ? '#FFFFFF' : theme.text.primary}
+            />
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -184,9 +231,15 @@ export const HomeScreen: React.FC = () => {
       <Header />
       <LocationChip placeName={location.placeName} hasPermission={location.hasPermission} />
       <FlatList
-        data={placeGroups}
-        keyExtractor={(item) => item.placeId}
-        renderItem={({ item }) => <PlaceGroupCard placeGroup={item} />}
+        data={displayedNotes}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <NoteCard
+            note={item}
+            timeLeft={item.timeLeft}
+            showLocation={true}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderFilterChips}
         ListEmptyComponent={renderEmptyState}
@@ -200,6 +253,55 @@ export const HomeScreen: React.FC = () => {
         currentLatitude={location.latitude}
         currentLongitude={location.longitude}
       />
+
+      {/* Location Picker Modal */}
+      <Modal
+        visible={locationPickerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLocationPickerVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setLocationPickerVisible(false)}
+        >
+          <View style={[styles.locationPickerContainer, { backgroundColor: theme.card }]}>
+            <TouchableOpacity
+              style={[styles.locationOption, { borderBottomColor: theme.cardBorder }]}
+              onPress={() => {
+                setSelectedLocation(null);
+                setLocationPickerVisible(false);
+              }}
+            >
+              <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
+                All Locations
+              </Text>
+              {!selectedLocation && (
+                <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
+              )}
+            </TouchableOpacity>
+
+            {uniqueLocations.map((loc) => (
+              <TouchableOpacity
+                key={loc.id}
+                style={[styles.locationOption, { borderBottomColor: theme.cardBorder }]}
+                onPress={() => {
+                  setSelectedLocation(loc.id);
+                  setLocationPickerVisible(false);
+                }}
+              >
+                <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
+                  {loc.name}
+                </Text>
+                {selectedLocation === loc.id && (
+                  <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -246,5 +348,40 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
+  },
+  chipWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  locationPickerContainer: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  locationOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  locationOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

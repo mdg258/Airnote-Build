@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Note } from '../types/note';
 import { formatDistance, formatTimeLeft } from '../utils/location';
-import { spacing, borderRadius, typography } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface NoteCardProps {
@@ -70,23 +70,28 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   distance: {
-    ...typography.small,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: '600',
   },
   location: {
-    ...typography.small,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: '500',
   },
   placeAddress: {
-    ...typography.small,
-    fontSize: 11,
+    fontSize: 12,
+    lineHeight: 16,
     marginTop: 2,
   },
   timeLeft: {
-    ...typography.small,
+    fontSize: 13,
+    lineHeight: 18,
   },
   text: {
-    ...typography.body,
+    fontSize: 18,
+    lineHeight: 26,
+    fontWeight: '400',
     marginBottom: spacing.xs,
   },
   footer: {
@@ -94,6 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   metadata: {
-    ...typography.small,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
