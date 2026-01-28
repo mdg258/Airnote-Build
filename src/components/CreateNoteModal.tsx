@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Modal,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
 import { Duration, Radius, NoteCategory } from '../types/note';
 import { borderRadius } from '../theme/colors';
@@ -14,6 +15,7 @@ import { NoteModeSelector } from './NoteModeSelector';
 import { LeaveNoteComposer } from './LeaveNoteComposer';
 import { SendNoteComposer } from './SendNoteComposer';
 import { LeaveNoteCategory } from '../constants/noteTemplates';
+import { ReleaseAnimation } from './ReleaseAnimation';
 
 interface CreateNoteModalProps {
   visible: boolean;
@@ -42,6 +44,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   const [mode, setMode] = useState<NoteMode>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null);
   const [locationOptions, setLocationOptions] = useState<LocationOption[]>([]);
+  const [showReleaseAnimation, setShowReleaseAnimation] = useState(false);
 
   useEffect(() => {
     if (visible && currentLatitude !== null && currentLongitude !== null) {
@@ -84,8 +87,16 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   ) => {
     if (!selectedLocation) return;
     onCreate(text, duration, radius, selectedLocation, category);
-    setMode(null);
-    onClose();
+
+    // Show release animation
+    setShowReleaseAnimation(true);
+
+    // Close modal after animation completes
+    setTimeout(() => {
+      setShowReleaseAnimation(false);
+      setMode(null);
+      onClose();
+    }, 1800);
   };
 
   const getLocationCoordinates = () => {
@@ -107,8 +118,16 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   const handleSendNoteCreate = (text: string, duration: Duration, radius: Radius) => {
     if (!selectedLocation) return;
     onCreate(text, duration, radius, selectedLocation);
-    setMode(null);
-    onClose();
+
+    // Show release animation
+    setShowReleaseAnimation(true);
+
+    // Close modal after animation completes
+    setTimeout(() => {
+      setShowReleaseAnimation(false);
+      setMode(null);
+      onClose();
+    }, 1800);
   };
 
   const handleCancel = () => {
@@ -156,6 +175,11 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
               locationDescription={getLocationDescription()}
               coordinates={getLocationCoordinates()}
             />
+          )}
+
+          {/* Release Animation Overlay */}
+          {showReleaseAnimation && (
+            <ReleaseAnimation />
           )}
         </View>
       </KeyboardAvoidingView>
