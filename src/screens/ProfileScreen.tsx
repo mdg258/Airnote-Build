@@ -5,8 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { spacing, typography } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { notesService } from '../services/notesService';
+import { commentsService } from '../services/commentsService';
 import { Note } from '../types/note';
 import { formatTimeLeft } from '../utils/location';
+import { NoteDetailModal } from '../components/NoteDetailModal';
+import { useLocation } from '../hooks/useLocation';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -21,8 +24,12 @@ interface NoteGroup {
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
+  const location = useLocation();
   const [userNotes, setUserNotes] = useState<Array<Note & { timeLeft: number }>>([]);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [selectedNote, setSelectedNote] = useState<(Note & { timeLeft: number; distance?: number }) | null>(null);
+  const [noteDetailModalVisible, setNoteDetailModalVisible] = useState(false);
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
 
   const loadUserNotes = () => {
     const notes = notesService.getUserNotes();
@@ -38,6 +45,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Load comment counts when notes change
+  useEffect(() => {
+    if (userNotes.length > 0) {
+      const noteIds = userNotes.map(n => n.id);
+      const counts = commentsService.getCommentCounts(noteIds);
+      setCommentCounts(counts);
+    }
+  }, [userNotes]);
 
   // Group notes by place
   const noteGroups = useMemo(() => {
@@ -122,10 +138,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         {/* Notes List */}
         {!isCollapsed && group.notes.map((note, index) => {
           const isLast = index === group.notes.length - 1;
+          const commentCount = commentCounts.get(note.id) || 0;
 
           return (
             <View key={note.id}>
-              <View style={styles.noteItem}>
+              <TouchableOpacity
+                style={styles.noteItem}
+                onPress={() => {
+                  setSelectedNote(note);
+                  setNoteDetailModalVisible(true);
+                }}
+                activeOpacity={0.7}
+              >
                 <Text style={[styles.noteText, { color: theme.text.primary }]}>
                   {!note.category && '✈️ '}{note.text}
                 </Text>
@@ -133,8 +157,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
                     {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
                   </Text>
+                  {commentCount > 0 && (
+                    <>
+                      <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}> · </Text>
+                      <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                        {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+                      </Text>
+                    </>
+                  )}
                 </View>
-              </View>
+              </TouchableOpacity>
               {!isLast && <View style={[styles.noteDivider, { backgroundColor: theme.cardBorder }]} />}
             </View>
           );
@@ -166,6 +198,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           {noteGroups.map(renderNoteGroup)}
         </ScrollView>
       )}
+
+      {/* Note Detail Modal */}
+      <NoteDetailModal
+        visible={noteDetailModalVisible}
+        onClose={() => {
+          setNoteDetailModalVisible(false);
+          setSelectedNote(null);
+        }}
+        note={selectedNote}
+        userLatitude={location.latitude}
+        userLongitude={location.longitude}
+        onCommentAdded={loadUserNotes}
+      />
     </SafeAreaView>
   );
 };

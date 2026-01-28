@@ -14,8 +14,10 @@ import { Header } from '../components/Header';
 import { LocationChip } from '../components/LocationChip';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
+import { NoteDetailModal } from '../components/NoteDetailModal';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
+import { commentsService } from '../services/commentsService';
 import { Duration, Radius, Note, NoteCategory } from '../types/note';
 import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -34,6 +36,8 @@ export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation();
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<(Note & { distance: number; timeLeft: number }) | null>(null);
+  const [noteDetailModalVisible, setNoteDetailModalVisible] = useState(false);
   const [nearbyNotes, setNearbyNotes] = useState<
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
@@ -43,6 +47,7 @@ export const HomeScreen: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     if (!location.latitude || !location.longitude) return;
@@ -57,6 +62,15 @@ export const HomeScreen: React.FC = () => {
       refreshNotes();
     }
   }, [location.latitude, location.longitude, refreshKey, radius]);
+
+  // Load comment counts when notes change
+  useEffect(() => {
+    if (nearbyNotes.length > 0) {
+      const noteIds = nearbyNotes.map(n => n.id);
+      const counts = commentsService.getCommentCounts(noteIds);
+      setCommentCounts(counts);
+    }
+  }, [nearbyNotes]);
 
   // Auto-seed on first load if no notes exist
   useEffect(() => {
@@ -302,10 +316,18 @@ export const HomeScreen: React.FC = () => {
         {!isCollapsed && group.notes.map((note, index) => {
           const catInfo = categoryInfo(note.category);
           const isLast = index === group.notes.length - 1;
+          const commentCount = commentCounts.get(note.id) || 0;
 
           return (
             <View key={note.id}>
-              <View style={styles.noteItem}>
+              <TouchableOpacity
+                style={styles.noteItem}
+                onPress={() => {
+                  setSelectedNote(note);
+                  setNoteDetailModalVisible(true);
+                }}
+                activeOpacity={0.7}
+              >
                 <View style={styles.noteContent}>
                   <Text style={[styles.noteText, { color: theme.text.primary }]}>
                     {!note.category && '✈️ '}{note.text}
@@ -315,8 +337,13 @@ export const HomeScreen: React.FC = () => {
                   <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
                     {formatTimeLeft(note.timeLeft)}
                   </Text>
+                  {commentCount > 0 && (
+                    <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                      {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+                    </Text>
+                  )}
                 </View>
-              </View>
+              </TouchableOpacity>
               {!isLast && <View style={[styles.noteDivider, { backgroundColor: theme.cardBorder }]} />}
             </View>
           );
@@ -376,6 +403,19 @@ export const HomeScreen: React.FC = () => {
         onCreate={handleCreateNote}
         currentLatitude={location.latitude}
         currentLongitude={location.longitude}
+      />
+
+      {/* Note Detail Modal */}
+      <NoteDetailModal
+        visible={noteDetailModalVisible}
+        onClose={() => {
+          setNoteDetailModalVisible(false);
+          setSelectedNote(null);
+        }}
+        note={selectedNote}
+        userLatitude={location.latitude}
+        userLongitude={location.longitude}
+        onCommentAdded={() => setRefreshKey(prev => prev + 1)}
       />
 
       {/* Location Picker Modal */}

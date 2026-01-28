@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,11 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import { PlaceGroup } from '../types/note';
+import { PlaceGroup, Note } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatDistance, formatTimeLeft } from '../utils/location';
+import { commentsService } from '../services/commentsService';
 
 interface PlaceNotesModalProps {
   visible: boolean;
@@ -19,6 +20,7 @@ interface PlaceNotesModalProps {
   placeGroup: PlaceGroup | null;
   userLatitude: number | null;
   userLongitude: number | null;
+  onNotePress?: (note: Note & { distance: number; timeLeft: number }) => void;
 }
 
 export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
@@ -27,8 +29,19 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
   placeGroup,
   userLatitude,
   userLongitude,
+  onNotePress,
 }) => {
   const { theme } = useTheme();
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+
+  // Load comment counts when modal opens
+  useEffect(() => {
+    if (!placeGroup || !visible) return;
+
+    const noteIds = placeGroup.notes.map(n => n.id);
+    const counts = commentsService.getCommentCounts(noteIds);
+    setCommentCounts(counts);
+  }, [placeGroup, visible]);
 
   if (!placeGroup) return null;
 
@@ -84,25 +97,38 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {placeGroup.notes.map((note, index) => (
-              <View
-                key={note.id}
-                style={[
-                  styles.noteItem,
-                  { backgroundColor: theme.background, borderColor: theme.cardBorder },
-                  index === placeGroup.notes.length - 1 && { marginBottom: 0 },
-                ]}
-              >
-                <Text style={[styles.noteText, { color: theme.text.primary }]}>
-                  {note.text}
-                </Text>
-                <View style={styles.noteMeta}>
-                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
-                    {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+            {placeGroup.notes.map((note, index) => {
+              const commentCount = commentCounts.get(note.id) || 0;
+              return (
+                <TouchableOpacity
+                  key={note.id}
+                  style={[
+                    styles.noteItem,
+                    { backgroundColor: theme.background, borderColor: theme.cardBorder },
+                    index === placeGroup.notes.length - 1 && { marginBottom: 0 },
+                  ]}
+                  onPress={() => onNotePress?.(note)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                    {note.text}
                   </Text>
-                </View>
-              </View>
-            ))}
+                  <View style={styles.noteMeta}>
+                    <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                      {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+                    </Text>
+                    {commentCount > 0 && (
+                      <>
+                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}> · </Text>
+                        <Text style={[styles.noteMetaText, { color: theme.primaryDark }]}>
+                          {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
             <View style={styles.bottomSpacer} />
           </ScrollView>
         </SafeAreaView>

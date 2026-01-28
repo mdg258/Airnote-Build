@@ -15,6 +15,7 @@ import { notesService } from '../services/notesService';
 import { PlaceGroup, Note } from '../types/note';
 import { groupNotesByPlace, getMarkerColor, getMapRegion } from '../utils/location';
 import { PlaceNotesModal } from '../components/PlaceNotesModal';
+import { NoteDetailModal } from '../components/NoteDetailModal';
 import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 import { CustomMarker } from '../components/CustomMarker';
 import { MapBottomDrawer } from '../components/MapBottomDrawer';
@@ -26,6 +27,8 @@ export const MapScreen: React.FC = () => {
   const mapRef = useRef<MapView>(null);
   const [selectedPlace, setSelectedPlace] = useState<PlaceGroup | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<(Note & { distance: number; timeLeft: number }) | null>(null);
+  const [noteDetailModalVisible, setNoteDetailModalVisible] = useState(false);
   const [nearbyNotes, setNearbyNotes] = useState<
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
@@ -109,6 +112,23 @@ export const MapScreen: React.FC = () => {
       setSelectedPlace(place);
       setModalVisible(true);
     }, 350);
+  }, []);
+
+  // Handle note press from PlaceNotesModal
+  const handleNotePress = useCallback((note: Note & { distance: number; timeLeft: number }) => {
+    setSelectedNote(note);
+    setNoteDetailModalVisible(true);
+  }, []);
+
+  // Handle note detail modal close
+  const handleNoteDetailClose = useCallback(() => {
+    setNoteDetailModalVisible(false);
+    setSelectedNote(null);
+  }, []);
+
+  // Handle comment added - refresh notes
+  const handleCommentAdded = useCallback(() => {
+    refreshNotes();
   }, []);
 
 
@@ -229,6 +249,17 @@ export const MapScreen: React.FC = () => {
         placeGroup={selectedPlace}
         userLatitude={location.latitude}
         userLongitude={location.longitude}
+        onNotePress={handleNotePress}
+      />
+
+      {/* Note Detail Modal */}
+      <NoteDetailModal
+        visible={noteDetailModalVisible}
+        onClose={handleNoteDetailClose}
+        note={selectedNote}
+        userLatitude={location.latitude}
+        userLongitude={location.longitude}
+        onCommentAdded={handleCommentAdded}
       />
     </SafeAreaView>
   );

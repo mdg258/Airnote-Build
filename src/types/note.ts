@@ -33,6 +33,22 @@ export interface CreateNoteInput {
   category?: NoteCategory;
 }
 
+export interface Comment {
+  id: string;
+  noteId: string; // Foreign key to parent note
+  text: string; // Max 100 characters (enforced in UI)
+  userId: string; // Who wrote the comment
+  userLocation: Location; // Where user was when commenting
+  createdAt: Date;
+  expiresAt: Date; // Same as parent note's expiresAt
+}
+
+export interface CreateCommentInput {
+  noteId: string;
+  text: string;
+  userLocation: Location;
+}
+
 export interface PlaceGroup {
   placeId: string;
   placeName: string;
