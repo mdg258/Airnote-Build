@@ -4,6 +4,7 @@ import { Note } from '../types/note';
 import { formatDistance, formatTimeLeft } from '../utils/location';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
+import { LEAVE_NOTE_CATEGORIES } from '../constants/noteTemplates';
 
 interface NoteCardProps {
   note: Note;
@@ -14,6 +15,9 @@ interface NoteCardProps {
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, showLocation = false }) => {
   const { theme } = useTheme();
+  const categoryInfo = note.category
+    ? LEAVE_NOTE_CATEGORIES.find(cat => cat.id === note.category)
+    : null;
 
   return (
     <View style={[styles.card, {
@@ -41,7 +45,14 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, distance, timeLeft, sh
         )}
         <Text style={[styles.timeLeft, { color: theme.text.secondary }]}>{formatTimeLeft(timeLeft)}</Text>
       </View>
-      <Text style={[styles.text, { color: theme.text.primary }]}>{note.text}</Text>
+      <View style={styles.textContainer}>
+        {categoryInfo && (
+          <View style={[styles.categoryBadge, { backgroundColor: categoryInfo.color + '15' }]}>
+            <Text style={styles.categoryEmoji}>{categoryInfo.icon}</Text>
+          </View>
+        )}
+        <Text style={[styles.text, { color: theme.text.primary }]}>{note.text}</Text>
+      </View>
       <View style={styles.footer}>
         <Text style={[styles.metadata, { color: theme.text.tertiary }]}>
           Radius: {Math.round(note.radius * 3.28084)}ft
@@ -88,7 +99,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
+  textContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+  },
+  categoryBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  categoryEmoji: {
+    fontSize: 14,
+  },
   text: {
+    flex: 1,
     fontSize: 18,
     lineHeight: 26,
     fontWeight: '400',

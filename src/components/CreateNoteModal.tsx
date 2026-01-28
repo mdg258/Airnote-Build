@@ -6,7 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Duration, Radius } from '../types/note';
+import { Duration, Radius, NoteCategory } from '../types/note';
 import { borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { getLocationOptions, LocationOption } from '../utils/location';
@@ -22,7 +22,8 @@ interface CreateNoteModalProps {
     text: string,
     duration: Duration,
     radius: Radius,
-    locationOption: LocationOption
+    locationOption: LocationOption,
+    category?: NoteCategory
   ) => void;
   currentLatitude: number | null;
   currentLongitude: number | null;
@@ -77,10 +78,10 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
     text: string,
     duration: Duration,
     radius: Radius,
-    _category: LeaveNoteCategory
+    category: LeaveNoteCategory
   ) => {
     if (!selectedLocation) return;
-    onCreate(text, duration, radius, selectedLocation);
+    onCreate(text, duration, radius, selectedLocation, category);
     setMode(null);
     onClose();
   };

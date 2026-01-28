@@ -17,7 +17,7 @@ import { FloatingActionButton } from '../components/FloatingActionButton';
 import { CreateNoteModal } from '../components/CreateNoteModal';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
-import { Duration, Radius, Note } from '../types/note';
+import { Duration, Radius, Note, NoteCategory } from '../types/note';
 import { spacing, typography, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -111,7 +111,8 @@ export const HomeScreen: React.FC = () => {
       description?: string;
       latitude: number;
       longitude: number;
-    }
+    },
+    category?: NoteCategory
   ) => {
     notesService.createNote({
       text,
@@ -121,6 +122,7 @@ export const HomeScreen: React.FC = () => {
       placeName: locationOption.name,
       placeAddress: locationOption.description,
       placeId: locationOption.id,
+      category,
     });
     setRefreshKey((prev) => prev + 1);
   };

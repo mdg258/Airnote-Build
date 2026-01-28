@@ -5,6 +5,7 @@ export interface Location {
 
 export type Duration = '15m' | '30m' | '1h' | '4h' | '24h';
 export type Radius = 9.14 | 22.86 | 45.72 | 91.44; // 30ft, 75ft, 150ft, 300ft in meters
+export type NoteCategory = 'issue' | 'info' | 'lostfound' | 'warning' | 'invite' | 'other';
 
 export interface Note {
   id: string;
@@ -18,6 +19,7 @@ export interface Note {
   expiresAt: Date;
   duration: Duration;
   userId: string; // ID of the user who created this note
+  category?: NoteCategory; // Category for leave notes
 }
 
 export interface CreateNoteInput {
@@ -28,6 +30,7 @@ export interface CreateNoteInput {
   placeId?: string;
   radius: Radius;
   duration: Duration;
+  category?: NoteCategory;
 }
 
 export interface PlaceGroup {

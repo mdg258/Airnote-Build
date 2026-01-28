@@ -44,6 +44,7 @@ export const notesService = {
       expiresAt,
       duration: input.duration,
       userId: CURRENT_USER_ID,
+      category: input.category,
     };
 
     notes.push(note);
