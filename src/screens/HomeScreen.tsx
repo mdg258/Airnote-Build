@@ -216,7 +216,16 @@ export const HomeScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {sortedNotes.map((note, index) => renderNoteCard(note, index))}
+          {sortedNotes.map((note, index) => (
+            <React.Fragment key={note.id}>
+              {renderNoteCard(note, index)}
+              {index < sortedNotes.length - 1 && (
+                <View style={styles.dividerContainer}>
+                  <View style={[styles.noteDivider, { backgroundColor: theme.primaryDark }]} />
+                </View>
+              )}
+            </React.Fragment>
+          ))}
         </ScrollView>
       )}
 
@@ -288,7 +297,14 @@ const styles = StyleSheet.create({
   noteItem: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-    marginBottom: spacing.xs,
+  },
+  dividerContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  noteDivider: {
+    height: 1,
+    opacity: 0.2,
   },
   noteText: {
     fontSize: 19,
