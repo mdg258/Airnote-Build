@@ -124,7 +124,7 @@ export const HomeScreen: React.FC = () => {
         const bBoost = b.timeLeft < 3600000 ? -200 : 0;
         return (a.distance + aBoost) - (b.distance + bBoost);
       } else if (sortMode === 'time') {
-        return a.timeLeft - b.timeLeft; // Expiring soonest first
+        return b.createdAt.getTime() - a.createdAt.getTime(); // Most recent first
       } else {
         // Sort by comment count
         const aCount = commentCounts.get(a.id) || 0;
