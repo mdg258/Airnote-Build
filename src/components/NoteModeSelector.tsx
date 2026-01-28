@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { spacing, borderRadius } from '../theme/colors';
+import { spacing } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface NoteModeSelectorProps {
@@ -11,102 +10,99 @@ interface NoteModeSelectorProps {
 
 export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode, onClose }) => {
   const { theme, textScale } = useTheme();
-  const scaleLeave = React.useRef(new Animated.Value(1)).current;
-  const scaleSend = React.useRef(new Animated.Value(1)).current;
+  const opacityLeave = React.useRef(new Animated.Value(1)).current;
+  const opacitySend = React.useRef(new Animated.Value(1)).current;
+  const translateSend = React.useRef(new Animated.Value(0)).current;
 
-  const handlePressIn = (scale: Animated.Value) => {
-    Animated.spring(scale, {
-      toValue: 0.96,
+  const handlePressIn = (opacity: Animated.Value) => {
+    Animated.timing(opacity, {
+      toValue: 0.4,
+      duration: 100,
       useNativeDriver: true,
     }).start();
   };
 
-  const handlePressOut = (scale: Animated.Value) => {
-    Animated.spring(scale, {
+  const handlePressOut = (opacity: Animated.Value) => {
+    Animated.timing(opacity, {
       toValue: 1,
-      friction: 3,
-      tension: 40,
+      duration: 150,
       useNativeDriver: true,
     }).start();
   };
+
+  React.useEffect(() => {
+    // Subtle floating animation for Send
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateSend, {
+          toValue: -3,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateSend, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   return (
     <View style={styles.container}>
-      {/* Close Button */}
       {onClose && (
-        <View style={styles.closeButtonContainer}>
-          <TouchableOpacity
-            onPress={onClose}
-            style={styles.closeButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="close" size={28} color={theme.text.secondary} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={onClose}
+          style={styles.closeButton}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        >
+          <Text style={[styles.closeText, { color: theme.text.tertiary }]}>✕</Text>
+        </TouchableOpacity>
       )}
 
-      <View style={styles.headerSection}>
-        <Text style={[styles.headerTitle, { color: theme.text.primary, fontSize: 26 * textScale }]}>Create a note</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
-          Choose how you want to communicate
-        </Text>
+      <View style={styles.content}>
+        {/* Send - Light, Airborne */}
+        <Animated.View
+          style={[
+            styles.choiceWrapper,
+            styles.sendWrapper,
+            { opacity: opacitySend, transform: [{ translateY: translateSend }] },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.choice}
+            onPress={() => onSelectMode('send')}
+            onPressIn={() => handlePressIn(opacitySend)}
+            onPressOut={() => handlePressOut(opacitySend)}
+            activeOpacity={1}
+          >
+            <Text style={[styles.sendText, { color: theme.text.primary, fontSize: 44 * textScale }]}>
+              Send
+            </Text>
+            <Text style={[styles.sendHint, { color: theme.text.tertiary, fontSize: 15 * textScale }]}>
+              Broadcast a message nearby
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Leave - Grounded, Stable */}
+        <Animated.View style={[styles.choiceWrapper, styles.leaveWrapper, { opacity: opacityLeave }]}>
+          <TouchableOpacity
+            style={styles.choice}
+            onPress={() => onSelectMode('leave')}
+            onPressIn={() => handlePressIn(opacityLeave)}
+            onPressOut={() => handlePressOut(opacityLeave)}
+            activeOpacity={1}
+          >
+            <Text style={[styles.leaveText, { color: theme.text.primary, fontSize: 48 * textScale }]}>
+              Leave
+            </Text>
+            <Text style={[styles.leaveHint, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
+              Pin a note to this place
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
-
-      {/* Leave Mode - Anchored, Grounded */}
-      <Animated.View style={[styles.modeWrapper, { transform: [{ scale: scaleLeave }] }]}>
-        <TouchableOpacity
-          style={[
-            styles.modeCard,
-            styles.leaveCard,
-            { backgroundColor: theme.card, borderColor: '#4A90E2' },
-          ]}
-          onPress={() => onSelectMode('leave')}
-          onPressIn={() => handlePressIn(scaleLeave)}
-          onPressOut={() => handlePressOut(scaleLeave)}
-          activeOpacity={1}
-        >
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBadge, { backgroundColor: '#4A90E2' }]}>
-              <Text style={styles.modeIcon}>📍</Text>
-            </View>
-            <View style={styles.cardTitle}>
-              <Text style={[styles.modeTitle, { color: theme.text.primary, fontSize: 22 * textScale }]}>Leave</Text>
-              <Text style={[styles.modeType, { color: theme.text.tertiary, fontSize: 10 * textScale }]}>UTILITY</Text>
-            </View>
-          </View>
-          <Text style={[styles.modeDescription, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
-            Pin a helpful note to this exact location
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      {/* Send Mode - Directional, Expressive */}
-      <Animated.View style={[styles.modeWrapper, { transform: [{ scale: scaleSend }] }]}>
-        <TouchableOpacity
-          style={[
-            styles.modeCard,
-            styles.sendCard,
-            { backgroundColor: theme.card, borderColor: '#E74C3C' },
-          ]}
-          onPress={() => onSelectMode('send')}
-          onPressIn={() => handlePressIn(scaleSend)}
-          onPressOut={() => handlePressOut(scaleSend)}
-          activeOpacity={1}
-        >
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBadge, { backgroundColor: '#E74C3C' }]}>
-              <Text style={styles.modeIcon}>✈️</Text>
-            </View>
-            <View style={styles.cardTitle}>
-              <Text style={[styles.modeTitle, { color: theme.text.primary, fontSize: 22 * textScale }]}>Send</Text>
-              <Text style={[styles.modeType, { color: theme.text.tertiary, fontSize: 10 * textScale }]}>BROADCAST</Text>
-            </View>
-          </View>
-          <Text style={[styles.modeDescription, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
-            Broadcast a message to people nearby
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
     </View>
   );
 };
@@ -114,90 +110,63 @@ export const NoteModeSelector: React.FC<NoteModeSelectorProps> = ({ onSelectMode
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.xl,
-    justifyContent: 'center',
-    gap: spacing.lg,
-  },
-  closeButtonContainer: {
-    position: 'absolute',
-    top: spacing.lg,
-    right: spacing.lg,
-    zIndex: 10,
+    paddingHorizontal: spacing.xl * 1.5,
   },
   closeButton: {
+    position: 'absolute',
+    top: spacing.xl,
+    right: spacing.xl,
+    zIndex: 10,
     width: 44,
     height: 44,
-    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerSection: {
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  modeWrapper: {
-    width: '100%',
-  },
-  modeCard: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    borderWidth: 2,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    gap: spacing.sm,
-  },
-  leaveCard: {
-    // Grounded, stable feeling
-  },
-  sendCard: {
-    // Light, directional feeling
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  iconBadge: {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modeIcon: {
-    fontSize: 28,
-  },
-  cardTitle: {
-    flex: 1,
-  },
-  modeTitle: {
+  closeText: {
     fontSize: 22,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    opacity: 0.4,
   },
-  modeType: {
-    fontSize: 10,
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: spacing.xl * 2,
+  },
+  choiceWrapper: {
+    alignItems: 'center',
+  },
+  sendWrapper: {
+    paddingBottom: spacing.xl,
+  },
+  leaveWrapper: {
+    paddingTop: spacing.lg,
+  },
+  choice: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  sendText: {
+    fontSize: 44,
+    fontWeight: '300',
+    letterSpacing: -1,
+    marginBottom: spacing.xs,
+  },
+  sendHint: {
+    fontSize: 15,
+    fontWeight: '400',
+    opacity: 0.5,
+    letterSpacing: -0.2,
+  },
+  leaveText: {
+    fontSize: 48,
     fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginTop: 2,
+    letterSpacing: -1.5,
+    marginBottom: spacing.xs,
   },
-  modeDescription: {
+  leaveHint: {
     fontSize: 15,
     fontWeight: '500',
-    lineHeight: 22,
+    opacity: 0.7,
+    letterSpacing: -0.2,
   },
 });
