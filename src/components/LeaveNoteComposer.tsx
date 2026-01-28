@@ -17,6 +17,13 @@ import { Duration, Radius } from '../types/note';
 import { LocationOption } from '../utils/location';
 import { LeaveNoteCategory } from '../constants/noteTemplates';
 
+const RADII: Array<{ value: Radius; label: string }> = [
+  { value: 15.24, label: '50ft' },
+  { value: 91.44, label: '300ft' },
+  { value: 304.8, label: '1000ft' },
+  { value: 1609, label: '1 mile' },
+];
+
 interface LeaveNoteComposerProps {
   onBack: () => void;
   onCreate: (text: string, duration: Duration, radius: Radius, category: LeaveNoteCategory) => void;
@@ -40,14 +47,14 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
   const { theme } = useTheme();
   const [text, setText] = useState('');
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
+  const [radius, setRadius] = useState<Radius>(91.44);
 
   const latitude = coordinates?.latitude ?? 37.7749;
   const longitude = coordinates?.longitude ?? -122.4194;
-  const radius = 15.24; // 50ft
 
   const handleSubmit = () => {
     if (text.trim()) {
-      onCreate(text.trim(), '1h', 15.24, 'info');
+      onCreate(text.trim(), '1h', radius, 'info');
     }
   };
 
@@ -118,6 +125,44 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           </View>
         )}
 
+        {/* Range Selector */}
+        <View style={styles.rangeSection}>
+          <View style={styles.rangeSectionHeader}>
+            <Text style={[styles.sectionLabel, { color: theme.text.tertiary }]}>RANGE</Text>
+            <Text style={[styles.rangeValue, { color: theme.primaryDark }]}>
+              {RADII.find((r) => r.value === radius)?.label}
+            </Text>
+          </View>
+          <View style={styles.rangeGrid}>
+            {RADII.map((r) => (
+              <TouchableOpacity
+                key={r.value}
+                style={[
+                  styles.rangeOption,
+                  {
+                    backgroundColor: radius === r.value ? theme.primaryDark + '15' : theme.card,
+                    borderColor: radius === r.value ? theme.primaryDark + '50' : theme.cardBorder,
+                  },
+                ]}
+                onPress={() => setRadius(r.value)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.rangeText,
+                    {
+                      color: radius === r.value ? theme.primaryDark : theme.text.secondary,
+                      fontWeight: radius === r.value ? '600' : '500',
+                    },
+                  ]}
+                >
+                  {r.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Map Preview */}
         <View style={styles.mapSection}>
           <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
@@ -130,8 +175,8 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               region={{
                 latitude,
                 longitude,
-                latitudeDelta: (radius * 4) / 111000,
-                longitudeDelta: (radius * 4) / 111000,
+                latitudeDelta: (radius * 3) / 111000,
+                longitudeDelta: (radius * 3) / 111000,
               }}
             >
               <Circle
@@ -144,7 +189,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
             </MapView>
           </View>
           <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
-            Visible within 50 ft · 1 hour
+            Visible within {RADII.find(r => r.value === radius)?.label} · 1 hour
           </Text>
         </View>
       </ScrollView>
@@ -406,5 +451,33 @@ const styles = StyleSheet.create({
   locationOptionSubtext: {
     fontSize: 12,
     opacity: 0.6,
+  },
+  rangeSection: {
+    gap: spacing.xs,
+  },
+  rangeSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rangeValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  rangeGrid: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  rangeOption: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    alignItems: 'center',
+  },
+  rangeText: {
+    fontSize: 12,
+    letterSpacing: -0.1,
   },
 });

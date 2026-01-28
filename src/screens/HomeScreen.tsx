@@ -38,7 +38,7 @@ export const HomeScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [radius, setRadius] = useState<91 | 1609>(91); // 300 ft or 1 mile
+  const [radius, setRadius] = useState<91 | 1609>(1609); // 300 ft or 1 mile
   const [sortMode, setSortMode] = useState<'closest' | 'ending-soon'>('closest');
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
@@ -306,12 +306,14 @@ export const HomeScreen: React.FC = () => {
           return (
             <View key={note.id}>
               <View style={styles.noteItem}>
-                <Text style={[styles.noteText, { color: theme.text.primary }]}>
-                  {note.text}
-                </Text>
+                <View style={styles.noteContent}>
+                  <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                    {note.text}
+                  </Text>
+                </View>
                 <View style={styles.noteMeta}>
                   <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
-                    {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+                    {formatTimeLeft(note.timeLeft)}
                   </Text>
                 </View>
               </View>
@@ -524,14 +526,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   noteItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+    gap: spacing.md,
   },
   noteContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-    marginBottom: spacing.xs,
+    flex: 1,
   },
   noteCategoryBadge: {
     width: 20,
@@ -545,16 +548,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   noteText: {
-    flex: 1,
     fontSize: 17,
     lineHeight: 23,
     fontWeight: '400',
   },
   noteMeta: {
-    paddingLeft: 26,
+    alignItems: 'flex-end',
+    gap: 2,
   },
   noteMetaText: {
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 18,
   },
   noteDivider: {

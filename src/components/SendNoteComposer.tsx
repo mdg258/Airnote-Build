@@ -23,10 +23,9 @@ interface SendNoteComposerProps {
 }
 
 const RADII: Array<{ value: Radius; label: string }> = [
-  { value: 9.14, label: '30ft' },
-  { value: 22.86, label: '75ft' },
-  { value: 45.72, label: '150ft' },
   { value: 91.44, label: '300ft' },
+  { value: 304.8, label: '1000ft' },
+  { value: 1609, label: '1 mile' },
 ];
 
 const URGENCY_LEVELS = [
@@ -43,7 +42,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
 }) => {
   const { theme } = useTheme();
   const [text, setText] = useState('');
-  const [radius, setRadius] = useState<Radius>(45.72);
+  const [radius, setRadius] = useState<Radius>(304.8);
   const [urgencyIndex, setUrgencyIndex] = useState(1);
 
   const latitude = coordinates?.latitude ?? 37.7749;
@@ -187,8 +186,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
               region={{
                 latitude,
                 longitude,
-                latitudeDelta: (radius * 4) / 111000,
-                longitudeDelta: (radius * 4) / 111000,
+                latitudeDelta: (radius * 3) / 111000,
+                longitudeDelta: (radius * 3) / 111000,
               }}
             >
               <Circle
@@ -328,11 +327,11 @@ const styles = StyleSheet.create({
   },
   rangeGrid: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   rangeOption: {
     flex: 1,
-    paddingVertical: 11,
+    paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 0.5,
     alignItems: 'center',

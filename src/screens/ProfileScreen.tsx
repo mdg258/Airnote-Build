@@ -7,7 +7,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { notesService } from '../services/notesService';
 import { Note } from '../types/note';
 import { formatTimeLeft } from '../utils/location';
-import { LEAVE_NOTE_CATEGORIES } from '../constants/noteTemplates';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -85,9 +84,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   );
 
   const renderNoteGroup = (group: NoteGroup) => {
-    const categoryInfo = (noteCategory: string | undefined) =>
-      noteCategory ? LEAVE_NOTE_CATEGORIES.find(cat => cat.id === noteCategory) : null;
-
     const isCollapsed = collapsedGroups.has(group.placeId);
 
     return (
@@ -125,22 +121,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         {/* Notes List */}
         {!isCollapsed && group.notes.map((note, index) => {
-          const catInfo = categoryInfo(note.category);
           const isLast = index === group.notes.length - 1;
 
           return (
             <View key={note.id}>
               <View style={styles.noteItem}>
-                <View style={styles.noteContent}>
-                  {catInfo && (
-                    <View style={[styles.noteCategoryBadge, { backgroundColor: catInfo.color + '15' }]}>
-                      <Text style={styles.noteCategoryEmoji}>{catInfo.icon}</Text>
-                    </View>
-                  )}
-                  <Text style={[styles.noteText, { color: theme.text.primary }]}>
-                    {note.text}
-                  </Text>
-                </View>
+                <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                  {note.text}
+                </Text>
                 <View style={styles.noteMeta}>
                   <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
                     {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
@@ -270,31 +258,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  noteContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-    marginBottom: spacing.xs,
-  },
-  noteCategoryBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  noteCategoryEmoji: {
-    fontSize: 12,
-  },
   noteText: {
-    flex: 1,
     fontSize: 17,
     lineHeight: 23,
     fontWeight: '400',
+    marginBottom: spacing.xs,
   },
   noteMeta: {
-    paddingLeft: 26,
+    flexDirection: 'row',
   },
   noteMetaText: {
     fontSize: 14,
