@@ -197,7 +197,7 @@ export const HomeScreen: React.FC = () => {
             </Text>
             {commentCount > 0 && (
               <View style={styles.commentBadge}>
-                <Ionicons name="chatbubble" size={11} color={theme.text.secondary} style={{ opacity: 0.7 }} />
+                <Ionicons name="chatbubble" size={11} color={theme.primaryDark} />
                 <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 12 * textScale }]}>
                   {commentCount}
                 </Text>

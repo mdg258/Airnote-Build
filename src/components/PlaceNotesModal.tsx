@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { PlaceGroup, Note } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -147,9 +148,15 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
                         {getHumanDistance(note.distance)} · {getQuietTime(note.timeLeft)}
                       </Text>
                       {commentCount > 0 && (
-                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
-                          {' · '}{commentCount} {commentCount === 1 ? 'reply' : 'replies'}
-                        </Text>
+                        <View style={styles.commentBadge}>
+                          <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+                            {' · '}
+                          </Text>
+                          <Ionicons name="chatbubble" size={11} color={theme.primaryDark} />
+                          <Text style={[styles.commentCountText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+                            {commentCount}
+                          </Text>
+                        </View>
                       )}
                     </View>
                   </TouchableOpacity>
@@ -234,6 +241,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   noteMetaText: {
+    fontSize: 13,
+    fontWeight: '400',
+    letterSpacing: -0.1,
+    opacity: 0.4,
+  },
+  commentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  commentCountText: {
     fontSize: 13,
     fontWeight: '400',
     letterSpacing: -0.1,
