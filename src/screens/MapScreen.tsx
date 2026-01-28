@@ -116,6 +116,7 @@ export const MapScreen: React.FC = () => {
 
   // Handle note press from PlaceNotesModal
   const handleNotePress = useCallback((note: Note & { distance: number; timeLeft: number }) => {
+    setModalVisible(false); // Close the place modal first
     setSelectedNote(note);
     setNoteDetailModalVisible(true);
   }, []);
