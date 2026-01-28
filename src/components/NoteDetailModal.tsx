@@ -118,36 +118,19 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
             activeOpacity={1}
             onPress={onClose}
           />
-          <SafeAreaView style={[styles.modal, { backgroundColor: theme.card }]} edges={['bottom']}>
-            {/* Header */}
-            <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-              <View style={styles.headerContent}>
-                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
+          <SafeAreaView style={[styles.modal, { backgroundColor: theme.background }]} edges={['bottom']}>
+            {/* Context Note - Floating, Minimal */}
+            <View style={styles.contextContainer}>
+              <View style={[styles.contextNote, { backgroundColor: theme.card }]}>
+                <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
                   {note.text}
                 </Text>
-                <View style={styles.metadataRow}>
-                  <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
-                    {radiusInFeet}ft radius
-                  </Text>
-                  {distanceText && (
-                    <>
-                      <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}> · </Text>
-                      <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
-                        {distanceText}
-                      </Text>
-                    </>
-                  )}
-                  <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 13 * textScale }]}> · </Text>
-                  <Text style={[styles.metadata, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
-                    {formatTimeLeft(note.timeLeft)}
-                  </Text>
-                </View>
-                <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 14 * textScale }]}>
-                  {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+                <Text style={[styles.metadata, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
+                  {formatTimeLeft(note.timeLeft)} · {distanceText || `${radiusInFeet}ft radius`}
                 </Text>
               </View>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Text style={[styles.closeIcon, { color: theme.text.secondary }]}>✕</Text>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Text style={[styles.closeIcon, { color: theme.text.tertiary }]}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -187,60 +170,61 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modal: {
-    maxHeight: '90%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    maxHeight: '85%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 20,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 12,
   },
-  header: {
+  contextContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  contextNote: {
+    flex: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    borderBottomWidth: 0.5,
-  },
-  headerContent: {
-    flex: 1,
-    paddingRight: spacing.sm,
+    borderRadius: 16,
+    gap: spacing.xs,
   },
   noteText: {
-    fontSize: 17,
-    fontWeight: '500',
-    lineHeight: 24,
-    marginBottom: spacing.xs,
-  },
-  metadataRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 21,
+    letterSpacing: -0.2,
+    opacity: 0.85,
   },
   metadata: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  commentCount: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 11,
+    lineHeight: 16,
+    opacity: 0.4,
+    letterSpacing: -0.05,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: -2,
   },
   closeIcon: {
-    fontSize: 24,
+    fontSize: 20,
+    opacity: 0.5,
   },
   scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.md,
   },
 });

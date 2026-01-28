@@ -13,7 +13,7 @@ interface CommentInputProps {
 
 export const CommentInput: React.FC<CommentInputProps> = ({
   onSubmit,
-  placeholder = 'Add a comment...',
+  placeholder = 'Add a quiet reply...',
   disabled = false,
   disabledMessage,
 }) => {
@@ -28,60 +28,43 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   };
 
   const isOverLimit = text.length > 100;
-  const isNearLimit = text.length >= 80;
   const canSubmit = text.trim().length > 0 && !isOverLimit && !disabled;
-
-  const charCountColor = isOverLimit
-    ? '#E74C3C'
-    : isNearLimit
-    ? theme.primaryDark
-    : theme.text.tertiary;
 
   return (
     <View style={styles.container}>
       {disabledMessage && (
-        <View style={[styles.disabledBanner, { backgroundColor: theme.primaryDark + '15' }]}>
-          <Ionicons name="information-circle" size={16} color={theme.primaryDark} />
-          <Text style={[styles.disabledText, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
+        <View style={[styles.disabledBanner, { backgroundColor: theme.background }]}>
+          <Text style={[styles.disabledText, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
             {disabledMessage}
           </Text>
         </View>
       )}
-      <View style={[styles.inputContainer, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+      <View style={[styles.inputContainer, { backgroundColor: theme.card }]}>
         <TextInput
           style={[
             styles.input,
-            { color: theme.text.primary, fontSize: 15 * textScale },
+            { color: theme.text.primary, fontSize: 17 * textScale },
             disabled && styles.disabledInput,
           ]}
           placeholder={placeholder}
-          placeholderTextColor={theme.text.tertiary + '80'}
+          placeholderTextColor={theme.text.secondary}
           value={text}
           onChangeText={setText}
-          multiline
-          maxLength={110} // Allow typing slightly over to show error state
+          maxLength={100}
           editable={!disabled}
-          textAlignVertical="top"
+          onSubmitEditing={handleSubmit}
+          returnKeyType="send"
+          blurOnSubmit={false}
         />
-        <View style={styles.inputFooter}>
-          <Text style={[styles.charCount, { color: charCountColor, fontSize: 12 * textScale }]}>
-            {text.length}/100
-          </Text>
+        {canSubmit && (
           <TouchableOpacity
-            style={[
-              styles.sendButton,
-              {
-                backgroundColor: canSubmit ? theme.primaryDark : theme.cardBorder,
-                opacity: canSubmit ? 1 : 0.5,
-              },
-            ]}
+            style={[styles.sendButton, { backgroundColor: theme.primaryDark }]}
             onPress={handleSubmit}
-            disabled={!canSubmit}
             activeOpacity={0.7}
           >
-            <Ionicons name="send" size={16} color="#FFFFFF" />
+            <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
           </TouchableOpacity>
-        </View>
+        )}
       </View>
     </View>
   );
@@ -89,49 +72,41 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: Platform.OS === 'ios' ? spacing.md : spacing.lg,
-    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? spacing.lg : spacing.xl,
+    paddingTop: spacing.md,
   },
   disabledBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
+    paddingVertical: spacing.sm,
+    borderRadius: 12,
     marginBottom: spacing.sm,
-    gap: spacing.xs,
   },
   disabledText: {
-    fontSize: 13,
-    fontWeight: '500',
-    flex: 1,
+    fontSize: 12,
+    fontWeight: '400',
+    opacity: 0.6,
+    textAlign: 'center',
   },
   inputContainer: {
-    borderRadius: 12,
-    borderWidth: 0.5,
-    padding: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    gap: spacing.sm,
   },
   input: {
-    fontSize: 15,
-    lineHeight: 20,
-    minHeight: 40,
-    maxHeight: 80,
+    flex: 1,
+    fontSize: 17,
+    lineHeight: 22,
     padding: 0,
     margin: 0,
+    fontWeight: '400',
+    letterSpacing: -0.2,
   },
   disabledInput: {
-    opacity: 0.5,
-  },
-  inputFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.xs,
-  },
-  charCount: {
-    fontSize: 12,
-    fontWeight: '500',
+    opacity: 0.4,
   },
   sendButton: {
     width: 32,

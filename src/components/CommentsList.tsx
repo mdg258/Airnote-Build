@@ -28,11 +28,8 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
   if (comments.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={[styles.emptyText, { color: theme.text.tertiary, fontSize: 16 * textScale }]}>
-          No comments yet
-        </Text>
-        <Text style={[styles.emptySubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
-          Be the first to comment
+        <Text style={[styles.emptyText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+          No replies yet
         </Text>
       </View>
     );
@@ -43,16 +40,12 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
       {comments.map((comment, index) => (
         <View
           key={comment.id}
-          style={[
-            styles.commentItem,
-            { backgroundColor: theme.background, borderColor: theme.cardBorder },
-            index === comments.length - 1 && { marginBottom: 0 },
-          ]}
+          style={styles.commentItem}
         >
           <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
             {comment.text}
           </Text>
-          <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
+          <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
             {formatRelativeTime(comment.createdAt)}
           </Text>
         </View>
@@ -63,34 +56,31 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: spacing.xs,
+    gap: spacing.lg,
   },
   commentItem: {
-    padding: spacing.md,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    marginBottom: spacing.sm,
+    gap: 6,
   },
   commentText: {
     fontSize: 15,
-    lineHeight: 20,
-    marginBottom: spacing.xs,
+    lineHeight: 21,
+    fontWeight: '400',
+    letterSpacing: -0.2,
+    opacity: 0.9,
   },
   commentTime: {
-    fontSize: 12,
-    opacity: 0.7,
+    fontSize: 11,
+    fontWeight: '400',
+    opacity: 0.35,
+    letterSpacing: -0.05,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: spacing.xl * 2,
   },
   emptyText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: spacing.xs,
-  },
-  emptySubtext: {
     fontSize: 14,
-    opacity: 0.7,
+    fontWeight: '400',
+    opacity: 0.4,
   },
 });
