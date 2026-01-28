@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Animated } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -16,45 +16,109 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
 }) => {
   const { theme } = useTheme();
 
+  // Animation values - only opacity (no transforms to avoid map positioning issues)
+  const breatheOpacity = useRef(new Animated.Value(1.1)).current;
+  const entryOpacity = useRef(new Animated.Value(0)).current;
+
+  // Size and opacity based on note count
+  // Subtle presence indicators - no explicit counts
+  const getMarkerSize = () => {
+    if (noteCount === 1) return 12;
+    if (noteCount === 2) return 16;
+    if (noteCount <= 4) return 20;
+    if (noteCount <= 7) return 24;
+    return 28;
+  };
+
+  const getMarkerOpacity = () => {
+    if (noteCount === 1) return 0.5;
+    if (noteCount === 2) return 0.6;
+    if (noteCount <= 4) return 0.7;
+    if (noteCount <= 7) return 0.85;
+    return 1;
+  };
+
+  const size = getMarkerSize();
+  const baseOpacity = getMarkerOpacity();
+
+  // Entry animation (once on mount)
+  useEffect(() => {
+    Animated.timing(entryOpacity, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      // After entry, start breathing animation
+      startBreathing();
+    });
+  }, []);
+
+  // Breathing animation (continuous, slow, subtle)
+  const startBreathing = () => {
+    // Randomize duration per dot (4-7 seconds)
+    const breathDuration = 4000 + Math.random() * 3000;
+    // Randomize initial delay so dots aren't synchronized
+    const initialDelay = Math.random() * breathDuration;
+
+    setTimeout(() => {
+      Animated.loop(
+        Animated.sequence([
+          // Breathe out (get brighter)
+          Animated.timing(breatheOpacity, {
+            toValue: 1.35,
+            duration: breathDuration / 4,
+            useNativeDriver: true,
+          }),
+          // Return to middle
+          Animated.timing(breatheOpacity, {
+            toValue: 1.1,
+            duration: breathDuration / 4,
+            useNativeDriver: true,
+          }),
+          // Breathe in (get dimmer)
+          Animated.timing(breatheOpacity, {
+            toValue: 0.85,
+            duration: breathDuration / 4,
+            useNativeDriver: true,
+          }),
+          // Return to middle
+          Animated.timing(breatheOpacity, {
+            toValue: 1.1,
+            duration: breathDuration / 4,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }, initialDelay);
+  };
+
   return (
     <Marker coordinate={coordinate} onPress={onPress} tracksViewChanges={false}>
-      <View style={[styles.markerContainer, {
-        backgroundColor: theme.primaryDark,
-        borderColor: theme.background,
-      }]}>
-        {noteCount > 1 ? (
-          <Text style={styles.markerText}>{noteCount}</Text>
-        ) : (
-          <View style={styles.markerDot} />
-        )}
-      </View>
+      <Animated.View
+        style={[
+          styles.markerContainer,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: theme.primaryDark,
+            opacity: Animated.multiply(
+              Animated.multiply(entryOpacity, breatheOpacity),
+              baseOpacity
+            ),
+          },
+        ]}
+      />
     </Marker>
   );
 };
 
 const styles = StyleSheet.create({
   markerContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  markerText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  markerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });

@@ -18,7 +18,7 @@ import { PlaceNotesModal } from '../components/PlaceNotesModal';
 import { NoteDetailModal } from '../components/NoteDetailModal';
 import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 import { CustomMarker } from '../components/CustomMarker';
-import { MapBottomDrawer } from '../components/MapBottomDrawer';
+import { MapContextMessage } from '../components/MapContextMessage';
 
 export const MapScreen: React.FC = () => {
   const { theme, themeMode, textScale } = useTheme();
@@ -33,6 +33,8 @@ export const MapScreen: React.FC = () => {
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMapMoving, setIsMapMoving] = useState(false);
+  const mapSettleTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
@@ -42,6 +44,15 @@ export const MapScreen: React.FC = () => {
     }, 10000);
     return () => clearInterval(interval);
   }, [location.latitude, location.longitude]);
+
+  // Cleanup map settle timer on unmount
+  useEffect(() => {
+    return () => {
+      if (mapSettleTimer.current) {
+        clearTimeout(mapSettleTimer.current);
+      }
+    };
+  }, []);
 
   // Refresh on location change
   useEffect(() => {
@@ -97,23 +108,6 @@ export const MapScreen: React.FC = () => {
     setSelectedPlace(null);
   }, []);
 
-  // Handle drawer place press
-  const handleDrawerPlacePress = useCallback((place: PlaceGroup) => {
-    // Center map on place
-    mapRef.current?.animateToRegion({
-      latitude: place.latitude,
-      longitude: place.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    }, 300);
-
-    // Open modal after brief delay
-    setTimeout(() => {
-      setSelectedPlace(place);
-      setModalVisible(true);
-    }, 350);
-  }, []);
-
   // Handle note press from PlaceNotesModal
   const handleNotePress = useCallback((note: Note & { distance: number; timeLeft: number }) => {
     setModalVisible(false); // Close the place modal first
@@ -132,14 +126,28 @@ export const MapScreen: React.FC = () => {
     refreshNotes();
   }, []);
 
+  // Handle map region change (user is panning/zooming)
+  const handleRegionChange = useCallback(() => {
+    setIsMapMoving(true);
+    // Clear any existing timer
+    if (mapSettleTimer.current) {
+      clearTimeout(mapSettleTimer.current);
+    }
+  }, []);
+
+  // Handle map region change complete (map settled)
+  const handleRegionChangeComplete = useCallback(() => {
+    // Wait a bit before fading back in
+    mapSettleTimer.current = setTimeout(() => {
+      setIsMapMoving(false);
+    }, 400);
+  }, []);
+
 
   // Loading state
   if (location.isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
-        </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.primaryDark} />
           <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
@@ -154,9 +162,6 @@ export const MapScreen: React.FC = () => {
   if (!location.hasPermission) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
-        </View>
         <View style={styles.centerContent}>
           <Text style={styles.permissionIcon}>📍</Text>
           <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
@@ -174,9 +179,6 @@ export const MapScreen: React.FC = () => {
   if (!location.latitude || !location.longitude || !mapRegion) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
-        </View>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.primaryDark} />
           <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
@@ -189,10 +191,6 @@ export const MapScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text.primary, fontSize: 34 * textScale }]}>Map</Text>
-      </View>
-
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
@@ -208,6 +206,8 @@ export const MapScreen: React.FC = () => {
           showsBuildings={false}
           loadingEnabled={true}
           loadingIndicatorColor={theme.primaryDark}
+          onRegionChange={handleRegionChange}
+          onRegionChangeComplete={handleRegionChangeComplete}
         >
           {placeGroups.map((group) => (
             <CustomMarker
@@ -234,13 +234,12 @@ export const MapScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Bottom Drawer */}
-        {placeGroups.length > 0 && (
-          <MapBottomDrawer
-            placeGroups={placeGroups}
-            onPlacePress={handleDrawerPlacePress}
-          />
-        )}
+        {/* Context Message */}
+        <MapContextMessage
+          noteCount={nearbyNotes.length}
+          placeCount={placeGroups.length}
+          isMapMoving={isMapMoving}
+        />
       </View>
 
       {/* Place Notes Modal */}
