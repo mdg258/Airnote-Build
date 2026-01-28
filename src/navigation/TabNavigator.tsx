@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { MapScreen } from '../screens/MapScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { useTheme } from '../contexts/ThemeContext';
 
 const Tab = createBottomTabNavigator();
@@ -48,7 +48,7 @@ export const TabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />

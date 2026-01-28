@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { spacing, typography } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { notesService } from '../services/notesService';
 import { Note } from '../types/note';
 import { NoteCard } from '../components/NoteCard';
 
-export const ProfileScreen: React.FC = () => {
+interface ProfileScreenProps {
+  navigation: any;
+}
+
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { theme } = useTheme();
   const [userNotes, setUserNotes] = useState<Array<Note & { timeLeft: number }>>([]);
 
@@ -40,6 +45,13 @@ export const ProfileScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text.primary }]}>My Notes</Text>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('Settings')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="settings-outline" size={24} color={theme.text.primary} />
+        </TouchableOpacity>
       </View>
       <FlatList
         data={userNotes}
@@ -63,6 +75,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
@@ -71,6 +86,9 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '600',
     lineHeight: 40,
+  },
+  settingsButton: {
+    padding: spacing.xs,
   },
   list: {
     paddingTop: spacing.sm,
