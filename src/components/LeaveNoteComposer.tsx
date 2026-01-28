@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Modal,
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { Duration, Radius } from '../types/note';
+import { LocationOption } from '../utils/location';
 import {
   LeaveNoteCategory,
   LEAVE_NOTE_CATEGORIES,
@@ -24,6 +26,9 @@ interface LeaveNoteComposerProps {
   locationName: string;
   locationDescription?: string;
   coordinates?: { latitude: number; longitude: number } | null;
+  locationOptions: LocationOption[];
+  selectedLocation: LocationOption | null;
+  onLocationChange: (location: LocationOption) => void;
 }
 
 export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
@@ -31,10 +36,14 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
   onCreate,
   locationName,
   coordinates,
+  locationOptions,
+  selectedLocation,
+  onLocationChange,
 }) => {
   const { theme } = useTheme();
   const [text, setText] = useState('');
   const [category, setCategory] = useState<LeaveNoteCategory>('info');
+  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
   const latitude = coordinates?.latitude ?? 37.7749;
   const longitude = coordinates?.longitude ?? -122.4194;
@@ -119,6 +128,33 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           ))}
         </View>
 
+        {/* Location Picker */}
+        {locationOptions.length > 1 && (
+          <View style={styles.locationSection}>
+            <Text style={[styles.sectionLabel, { color: theme.text.tertiary }]}>LOCATION</Text>
+            <TouchableOpacity
+              style={[styles.locationButton, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+              onPress={() => setLocationPickerVisible(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.locationButtonContent}>
+                <Ionicons name="location" size={18} color={selectedCategory?.color || theme.primaryDark} />
+                <View style={styles.locationTextContainer}>
+                  <Text style={[styles.locationButtonText, { color: theme.text.primary }]} numberOfLines={1}>
+                    {selectedLocation?.name || locationName}
+                  </Text>
+                  {selectedLocation?.description && (
+                    <Text style={[styles.locationButtonSubtext, { color: theme.text.tertiary }]} numberOfLines={1}>
+                      {selectedLocation.description}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={theme.text.tertiary} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Map Preview */}
         <View style={styles.mapSection}>
           <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
@@ -167,6 +203,61 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           <Text style={styles.submitButtonText}>Place Note</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Location Picker Modal */}
+      <Modal
+        visible={locationPickerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLocationPickerVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setLocationPickerVisible(false)}
+        >
+          <View style={[styles.locationPickerContainer, { backgroundColor: theme.card }]}>
+            <View style={[styles.pickerHeader, { borderBottomColor: theme.cardBorder }]}>
+              <Text style={[styles.pickerTitle, { color: theme.text.primary }]}>Choose Location</Text>
+            </View>
+            {locationOptions.map((location, index) => (
+              <TouchableOpacity
+                key={location.id}
+                style={[
+                  styles.locationOption,
+                  { borderBottomColor: theme.cardBorder },
+                  index === locationOptions.length - 1 && { borderBottomWidth: 0 },
+                ]}
+                onPress={() => {
+                  onLocationChange(location);
+                  setLocationPickerVisible(false);
+                }}
+              >
+                <View style={styles.locationOptionContent}>
+                  <Ionicons
+                    name={location.id === 'current' ? 'navigate' : 'location'}
+                    size={20}
+                    color={selectedLocation?.id === location.id ? (selectedCategory?.color || theme.primaryDark) : theme.text.secondary}
+                  />
+                  <View style={styles.locationOptionTextContainer}>
+                    <Text style={[styles.locationOptionText, { color: theme.text.primary }]}>
+                      {location.name}
+                    </Text>
+                    {location.description && (
+                      <Text style={[styles.locationOptionSubtext, { color: theme.text.tertiary }]} numberOfLines={1}>
+                        {location.description}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                {selectedLocation?.id === location.id && (
+                  <Ionicons name="checkmark" size={20} color={selectedCategory?.color || theme.primaryDark} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -281,5 +372,97 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.3,
+  },
+  locationSection: {
+    gap: spacing.xs,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 0.5,
+  },
+  locationButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  locationTextContainer: {
+    flex: 1,
+  },
+  locationButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  locationButtonSubtext: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  locationPickerContainer: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  pickerHeader: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 0.5,
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  locationOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 0.5,
+  },
+  locationOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  locationOptionTextContainer: {
+    flex: 1,
+  },
+  locationOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  locationOptionSubtext: {
+    fontSize: 12,
+    opacity: 0.6,
   },
 });

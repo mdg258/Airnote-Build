@@ -68,6 +68,47 @@ export interface LocationOption {
 }
 
 /**
+ * Get nearby places (POIs) within a small radius
+ * For MVP, returns mock data. Can be replaced with Google Places API integration.
+ */
+export const getNearbyPlaces = async (
+  latitude: number,
+  longitude: number,
+  radius: number = 200 // meters
+): Promise<LocationOption[]> => {
+  // TODO: Replace with actual Google Places API call
+  // For now, return current location as the only option
+  try {
+    const results = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
+
+    const place = results.length > 0 ? results[0] : null;
+    const options: LocationOption[] = [];
+
+    // Current location
+    options.push({
+      id: 'current',
+      name: 'Current Location',
+      description: place?.street || 'Your exact location',
+      latitude,
+      longitude,
+    });
+
+    return options;
+  } catch (error) {
+    console.error('Failed to get nearby places:', error);
+    return [{
+      id: 'current',
+      name: 'Current Location',
+      latitude,
+      longitude,
+    }];
+  }
+};
+
+/**
  * Get detailed location options from reverse geocoding
  */
 export const getLocationOptions = async (
@@ -75,34 +116,36 @@ export const getLocationOptions = async (
   longitude: number
 ): Promise<LocationOption[]> => {
   try {
+    // Get nearby places (POIs like bars, restaurants, etc.)
+    const nearbyPlaces = await getNearbyPlaces(latitude, longitude);
+
     const results = await Location.reverseGeocodeAsync({
       latitude,
       longitude,
     });
 
     if (results.length === 0) {
-      return [{
-        id: 'current',
-        name: 'Current Location',
-        latitude,
-        longitude,
-      }];
+      return nearbyPlaces;
     }
 
     const place = results[0];
-    const options: LocationOption[] = [];
+    const options: LocationOption[] = [...nearbyPlaces];
 
     // Option 1: Specific address (if available)
     if (place.name || place.street) {
       const addressParts = [place.name, place.street].filter(Boolean);
       if (addressParts.length > 0) {
-        options.push({
+        const addressOption = {
           id: 'address',
           name: addressParts.join(', '),
           description: [place.subregion, place.city].filter(Boolean).join(', '),
           latitude,
           longitude,
-        });
+        };
+        // Only add if not duplicate of current location
+        if (!options.some(opt => opt.name === addressOption.name)) {
+          options.push(addressOption);
+        }
       }
     }
 
@@ -124,17 +167,6 @@ export const getLocationOptions = async (
         longitude,
       });
     }
-
-    // Option 3: General area
-    options.push({
-      id: 'general',
-      name: 'General Area',
-      description: [place.subregion, place.city, place.region]
-        .filter(Boolean)
-        .join(', '),
-      latitude,
-      longitude,
-    });
 
     return options.length > 0 ? options : [{
       id: 'current',

@@ -41,6 +41,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   const { theme } = useTheme();
   const [mode, setMode] = useState<NoteMode>(null);
   const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null);
+  const [locationOptions, setLocationOptions] = useState<LocationOption[]>([]);
 
   useEffect(() => {
     if (visible && currentLatitude !== null && currentLongitude !== null) {
@@ -60,6 +61,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
 
     try {
       const options = await getLocationOptions(currentLatitude, currentLongitude);
+      setLocationOptions(options);
       setSelectedLocation(options[0]);
     } catch (error) {
       console.error('Failed to load location options:', error);
@@ -117,6 +119,10 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
   const getLocationName = () => selectedLocation?.name || 'Current Location';
   const getLocationDescription = () => selectedLocation?.description;
 
+  const handleLocationChange = (location: LocationOption) => {
+    setSelectedLocation(location);
+  };
+
   return (
     <Modal
       visible={visible}
@@ -138,6 +144,9 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
               locationName={getLocationName()}
               locationDescription={getLocationDescription()}
               coordinates={getLocationCoordinates()}
+              locationOptions={locationOptions}
+              selectedLocation={selectedLocation}
+              onLocationChange={handleLocationChange}
             />
           ) : (
             <SendNoteComposer
