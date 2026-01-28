@@ -38,28 +38,38 @@ export const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
   return (
     <View style={styles.container}>
       {comments.map((comment, index) => (
-        <View
-          key={comment.id}
-          style={styles.commentItem}
-        >
-          <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
-            {comment.text}
-          </Text>
-          <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
-            {formatRelativeTime(comment.createdAt)}
-          </Text>
-        </View>
+        <React.Fragment key={comment.id}>
+          <View style={styles.commentItem}>
+            <Text style={[styles.commentText, { color: theme.text.primary, fontSize: 15 * textScale }]}>
+              {comment.text}
+            </Text>
+            <Text style={[styles.commentTime, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>
+              {formatRelativeTime(comment.createdAt)}
+            </Text>
+          </View>
+          {index < comments.length - 1 && (
+            <View style={styles.dividerContainer}>
+              <View style={[styles.commentDivider, { backgroundColor: theme.primaryDark }]} />
+            </View>
+          )}
+        </React.Fragment>
       ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    gap: spacing.lg,
-  },
+  container: {},
   commentItem: {
     gap: 6,
+    paddingVertical: spacing.sm,
+  },
+  dividerContainer: {
+    paddingVertical: spacing.sm,
+  },
+  commentDivider: {
+    height: 1,
+    opacity: 0.15,
   },
   commentText: {
     fontSize: 15,
