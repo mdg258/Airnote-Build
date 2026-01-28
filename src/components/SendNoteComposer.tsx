@@ -13,6 +13,7 @@ import Slider from '@react-native-community/slider';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { Duration, Radius } from '../types/note';
+import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 
 interface SendNoteComposerProps {
   onBack: () => void;
@@ -40,7 +41,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
   locationName,
   coordinates,
 }) => {
-  const { theme } = useTheme();
+  const { theme, themeMode } = useTheme();
   const [text, setText] = useState('');
   const [radius, setRadius] = useState<Radius>(304.8);
   const [urgencyIndex, setUrgencyIndex] = useState(1);
@@ -179,10 +180,14 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
           <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
             <MapView
               style={styles.map}
+              mapType="mutedStandard"
+              customMapStyle={themeMode === 'dark' ? darkMapStyle : lightMapStyle}
               scrollEnabled={false}
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
+              showsPointsOfInterest={false}
+              showsBuildings={false}
               region={{
                 latitude,
                 longitude,

@@ -177,11 +177,14 @@ export const MapScreen: React.FC = () => {
           ref={mapRef}
           style={styles.map}
           initialRegion={mapRegion}
+          mapType="mutedStandard"
           customMapStyle={isDark ? darkMapStyle : lightMapStyle}
           showsUserLocation={true}
           showsMyLocationButton={false}
           showsCompass={false}
           showsScale={false}
+          showsPointsOfInterest={false}
+          showsBuildings={false}
           loadingEnabled={true}
           loadingIndicatorColor={theme.primaryDark}
         >

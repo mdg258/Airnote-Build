@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { Duration, Radius } from '../types/note';
 import { LocationOption } from '../utils/location';
 import { LeaveNoteCategory } from '../constants/noteTemplates';
+import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 
 interface LeaveNoteComposerProps {
   onBack: () => void;
@@ -37,7 +38,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
   selectedLocation,
   onLocationChange,
 }) => {
-  const { theme } = useTheme();
+  const { theme, themeMode } = useTheme();
   const [text, setText] = useState('');
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
@@ -123,10 +124,14 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
             <MapView
               style={styles.map}
+              mapType="mutedStandard"
+              customMapStyle={themeMode === 'dark' ? darkMapStyle : lightMapStyle}
               scrollEnabled={false}
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
+              showsPointsOfInterest={false}
+              showsBuildings={false}
               region={{
                 latitude,
                 longitude,
