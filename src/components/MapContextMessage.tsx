@@ -1,41 +1,32 @@
 import React from 'react';
-import { View, Text, StyleSheet, Animated, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../theme/colors';
 
 interface MapContextMessageProps {
-  noteCount: number;
   opacity: Animated.AnimatedInterpolation<number>;
   isLoading?: boolean;
 }
 
 export const MapContextMessage: React.FC<MapContextMessageProps> = ({
-  noteCount,
   opacity,
   isLoading = false,
 }) => {
   const { theme, textScale } = useTheme();
 
   const getMessage = () => {
-    if (isLoading) return 'Looking around...';
-    if (noteCount === 0) return 'Not much around right now';
-    if (noteCount <= 2) return 'Not much around right now';
-    if (noteCount <= 5) return 'A few things around you';
-    return "There's a lot happening nearby";
+    if (isLoading) return 'Listening nearby';
+    // No contextual messages during or after transition - keep it minimal
+    return '';
   };
 
   const message = getMessage();
 
+  if (!message) return null;
+
   return (
     <Animated.View style={[styles.container, { opacity }]}>
       <View style={[styles.messageBox, { backgroundColor: theme.card + 'F0', borderColor: theme.cardBorder }]}>
-        {isLoading && (
-          <ActivityIndicator
-            size="small"
-            color={theme.primaryDark}
-            style={styles.loadingIndicator}
-          />
-        )}
         <Text style={[styles.message, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
           {message}
         </Text>
@@ -63,12 +54,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  loadingIndicator: {
-    marginRight: 4,
+    justifyContent: 'center',
   },
   message: {
     fontSize: 15,

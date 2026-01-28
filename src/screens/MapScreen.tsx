@@ -17,7 +17,7 @@ import { PlaceNotesModal } from '../components/PlaceNotesModal';
 import { NoteDetailModal } from '../components/NoteDetailModal';
 import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
 import { CustomMarker } from '../components/CustomMarker';
-import { MapContextMessage } from '../components/MapContextMessage';
+import { MapPulseAnimation } from '../components/MapPulseAnimation';
 
 export const MapScreen: React.FC = () => {
   const { theme, themeMode, textScale } = useTheme();
@@ -38,7 +38,6 @@ export const MapScreen: React.FC = () => {
   const mapScale = useRef(new Animated.Value(1.3)).current;
   const mapOpacity = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
-  const messageOpacity = useRef(new Animated.Value(1)).current; // Start visible
   const hasAnimated = useRef(false);
 
   // Trigger coordinated opening animation once when map is ready
@@ -47,32 +46,27 @@ export const MapScreen: React.FC = () => {
 
     hasAnimated.current = true;
 
-    // Brief delay to let notes load, then start animation
+    // Start animation immediately - pulse and map crossfade seamlessly
     const timer = setTimeout(() => {
-      // Sequence: message visible → hold → message fades + map reveals
+      // Start map reveal while pulse is actively finishing (deep crossfade)
       Animated.sequence([
-        // 1. Hold message visible so user can read it
-        Animated.delay(1800),
-        // 2. Fade out message while map zooms in
+        // Wait 850ms, then crossfade as final rings are pulsing (pulse ends at 1160ms)
+        Animated.delay(850),
+        // Crossfade map in as pulse completes
         Animated.parallel([
-          Animated.timing(messageOpacity, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
           Animated.timing(mapScale, {
             toValue: 1,
-            duration: 900,
+            duration: 500,
             useNativeDriver: true,
           }),
           Animated.timing(mapOpacity, {
             toValue: 1,
-            duration: 600,
+            duration: 450,
             useNativeDriver: true,
           }),
           Animated.timing(overlayOpacity, {
             toValue: 0,
-            duration: 700,
+            duration: 450,
             useNativeDriver: true,
           }),
         ]),
@@ -80,7 +74,7 @@ export const MapScreen: React.FC = () => {
         // Mark animation as complete
         setAnimationComplete(true);
       });
-    }, 300);
+    }, 50);
 
     return () => clearTimeout(timer);
   }, [location.latitude, location.longitude]);
@@ -284,12 +278,8 @@ export const MapScreen: React.FC = () => {
           pointerEvents="none"
         />
 
-        {/* Context message - appears on top of everything before map reveals */}
-        <MapContextMessage
-          noteCount={nearbyNotes.length}
-          opacity={messageOpacity}
-          isLoading={isLoadingLocation}
-        />
+        {/* Pulse animation during loading - appears above overlay */}
+        <MapPulseAnimation isVisible={!animationComplete} />
       </View>
 
       {/* Place Notes Modal */}
