@@ -1,75 +1,80 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from 'react';
+import { View, Text, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../theme/colors';
 
 interface MapContextMessageProps {
   noteCount: number;
-  placeCount: number;
-  isMapMoving?: boolean;
+  opacity: Animated.AnimatedInterpolation<number>;
+  isLoading?: boolean;
 }
 
 export const MapContextMessage: React.FC<MapContextMessageProps> = ({
   noteCount,
-  placeCount,
-  isMapMoving = false,
+  opacity,
+  isLoading = false,
 }) => {
   const { theme, textScale } = useTheme();
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  // Fade animation based on map movement
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: isMapMoving ? 0.45 : 1,
-      duration: isMapMoving ? 150 : 300,
-      useNativeDriver: true,
-    }).start();
-  }, [isMapMoving]);
 
   const getMessage = () => {
+    if (isLoading) return 'Looking around...';
     if (noteCount === 0) return '';
-    if (noteCount === 1) return 'A note nearby';
-    if (noteCount <= 3) return 'A few notes nearby';
-    if (noteCount <= 7) return 'Several notes nearby';
-    return 'Many notes nearby';
+    if (noteCount <= 2) return 'Not much around right now';
+    if (noteCount <= 5) return 'A few things around you';
+    return "There's a lot happening nearby";
   };
 
   const message = getMessage();
 
-  if (!message) return null;
+  if (!message && !isLoading) return null;
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.card }]}
-      edges={['bottom']}
-    >
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={[styles.message, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+    <Animated.View style={[styles.container, { opacity }]}>
+      <View style={[styles.messageBox, { backgroundColor: theme.card + 'F0', borderColor: theme.cardBorder }]}>
+        {isLoading && (
+          <ActivityIndicator
+            size="small"
+            color={theme.primaryDark}
+            style={styles.loadingIndicator}
+          />
+        )}
+        <Text style={[styles.message, { color: theme.text.secondary, fontSize: 15 * textScale }]}>
           {message}
         </Text>
-      </Animated.View>
-    </SafeAreaView>
+      </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 0,
+    top: '42%',
     left: 0,
     right: 0,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  messageBox: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md + 2,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  loadingIndicator: {
+    marginRight: 4,
   },
   message: {
-    fontSize: 14,
-    fontWeight: '400',
-    letterSpacing: -0.1,
-    opacity: 0.5,
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: -0.2,
   },
 });

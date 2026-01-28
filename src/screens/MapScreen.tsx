@@ -3,17 +3,16 @@ import {
   StyleSheet,
   View,
   Text,
-  ActivityIndicator,
-  TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker } from 'react-native-maps';
+import MapView from 'react-native-maps';
 import { spacing, typography } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocation } from '../hooks/useLocation';
 import { notesService } from '../services/notesService';
 import { PlaceGroup, Note } from '../types/note';
-import { groupNotesByPlace, getMarkerColor, getMapRegion } from '../utils/location';
+import { groupNotesByPlace, getMapRegion } from '../utils/location';
 import { PlaceNotesModal } from '../components/PlaceNotesModal';
 import { NoteDetailModal } from '../components/NoteDetailModal';
 import { lightMapStyle, darkMapStyle } from '../theme/mapStyles';
@@ -32,9 +31,55 @@ export const MapScreen: React.FC = () => {
   const [nearbyNotes, setNearbyNotes] = useState<
     Array<Note & { distance: number; timeLeft: number }>
   >([]);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isMapMoving, setIsMapMoving] = useState(false);
-  const mapSettleTimer = useRef<NodeJS.Timeout | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Sleek opening animation sequence
+  const mapScale = useRef(new Animated.Value(1.3)).current;
+  const mapOpacity = useRef(new Animated.Value(0)).current;
+  const overlayOpacity = useRef(new Animated.Value(1)).current;
+  const messageOpacity = useRef(new Animated.Value(1)).current; // Start visible
+  const hasAnimated = useRef(false);
+
+  // Trigger coordinated opening animation once when map is ready
+  useEffect(() => {
+    if (!location.latitude || !location.longitude || hasAnimated.current) return;
+
+    hasAnimated.current = true;
+
+    // Brief delay to let notes load, then start animation
+    const timer = setTimeout(() => {
+      // Sequence: message visible → hold → message fades + map reveals
+      Animated.sequence([
+        // 1. Hold message visible so user can read it
+        Animated.delay(1800),
+        // 2. Fade out message while map zooms in
+        Animated.parallel([
+          Animated.timing(messageOpacity, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(mapScale, {
+            toValue: 1,
+            duration: 900,
+            useNativeDriver: true,
+          }),
+          Animated.timing(mapOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(overlayOpacity, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [location.latitude, location.longitude]);
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
@@ -45,21 +90,12 @@ export const MapScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, [location.latitude, location.longitude]);
 
-  // Cleanup map settle timer on unmount
-  useEffect(() => {
-    return () => {
-      if (mapSettleTimer.current) {
-        clearTimeout(mapSettleTimer.current);
-      }
-    };
-  }, []);
-
   // Refresh on location change
   useEffect(() => {
     if (location.latitude && location.longitude) {
       refreshNotes();
     }
-  }, [location.latitude, location.longitude, refreshKey]);
+  }, [location.latitude, location.longitude]);
 
   const refreshNotes = () => {
     if (!location.latitude || !location.longitude) return;
@@ -127,39 +163,30 @@ export const MapScreen: React.FC = () => {
   }, []);
 
   // Handle map region change (user is panning/zooming)
-  const handleRegionChange = useCallback(() => {
-    setIsMapMoving(true);
-    // Clear any existing timer
-    if (mapSettleTimer.current) {
-      clearTimeout(mapSettleTimer.current);
+  const handleRegionChange = useCallback((region: any) => {
+    // Calculate zoom level from latitudeDelta (smaller delta = more zoomed in)
+    // latitudeDelta ranges from ~0.001 (very zoomed in) to ~100+ (very zoomed out)
+    // We'll map this to a scale factor between 1.0 and 1.6
+    if (region && region.latitudeDelta) {
+      const delta = region.latitudeDelta;
+      // Map delta to zoom scale: smaller delta (zoomed in) = larger scale
+      // delta 0.001 -> scale 1.6, delta 0.1 -> scale 1.0
+      const minDelta = 0.001;
+      const maxDelta = 0.1;
+      const minScale = 1.0;
+      const maxScale = 1.6;
+
+      const clampedDelta = Math.max(minDelta, Math.min(maxDelta, delta));
+      const normalized = (clampedDelta - minDelta) / (maxDelta - minDelta);
+      const scale = maxScale - normalized * (maxScale - minScale);
+
+      setZoomLevel(scale);
     }
   }, []);
 
-  // Handle map region change complete (map settled)
-  const handleRegionChangeComplete = useCallback(() => {
-    // Wait a bit before fading back in
-    mapSettleTimer.current = setTimeout(() => {
-      setIsMapMoving(false);
-    }, 400);
-  }, []);
 
-
-  // Loading state
-  if (location.isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
-            Getting your location...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Permission denied state
-  if (!location.hasPermission) {
+  // Only show permission denied state if we're not loading and permission is actually denied
+  if (!location.isLoading && !location.hasPermission) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
         <View style={styles.centerContent}>
@@ -175,52 +202,59 @@ export const MapScreen: React.FC = () => {
     );
   }
 
-  // No location yet
-  if (!location.latitude || !location.longitude || !mapRegion) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={theme.primaryDark} />
-          <Text style={[styles.statusText, { color: theme.text.secondary, fontSize: 17 * textScale }]}>
-            Loading map...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Show loading message while getting location
+  const isLoadingLocation = location.isLoading || !location.latitude || !location.longitude || !mapRegion;
+
+  // Use a default region if still loading
+  const displayRegion = mapRegion || {
+    latitude: 37.7749,
+    longitude: -122.4194,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top']}>
       <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={mapRegion}
-          mapType="mutedStandard"
-          customMapStyle={isDark ? darkMapStyle : lightMapStyle}
-          showsUserLocation={true}
-          showsMyLocationButton={false}
-          showsCompass={false}
-          showsScale={false}
-          showsPointsOfInterest={false}
-          showsBuildings={false}
-          loadingEnabled={true}
-          loadingIndicatorColor={theme.primaryDark}
-          onRegionChange={handleRegionChange}
-          onRegionChangeComplete={handleRegionChangeComplete}
+        <Animated.View
+          style={[
+            styles.mapWrapper,
+            {
+              opacity: mapOpacity,
+              transform: [{ scale: mapScale }],
+            },
+          ]}
         >
-          {placeGroups.map((group) => (
-            <CustomMarker
-              key={group.placeId}
-              coordinate={{ latitude: group.latitude, longitude: group.longitude }}
-              noteCount={group.noteCount}
-              onPress={() => handleMarkerPress(group)}
-            />
-          ))}
-        </MapView>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={displayRegion}
+            mapType="mutedStandard"
+            customMapStyle={isDark ? darkMapStyle : lightMapStyle}
+            showsUserLocation={true}
+            showsMyLocationButton={false}
+            showsCompass={false}
+            showsScale={false}
+            showsPointsOfInterest={false}
+            showsBuildings={false}
+            loadingEnabled={true}
+            loadingIndicatorColor={theme.primaryDark}
+            onRegionChange={handleRegionChange}
+          >
+            {!isLoadingLocation && placeGroups.map((group) => (
+              <CustomMarker
+                key={group.placeId}
+                coordinate={{ latitude: group.latitude, longitude: group.longitude }}
+                noteCount={group.noteCount}
+                onPress={() => handleMarkerPress(group)}
+                zoomScale={zoomLevel}
+              />
+            ))}
+          </MapView>
+        </Animated.View>
 
         {/* Empty state overlay */}
-        {placeGroups.length === 0 && (
+        {!isLoadingLocation && placeGroups.length === 0 && (
           <View style={[styles.emptyOverlay, { backgroundColor: theme.background + 'CC' }]}>
             <View style={styles.emptyContent}>
               <Text style={styles.emptyIcon}>🗺️</Text>
@@ -234,11 +268,23 @@ export const MapScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Context Message */}
+        {/* Futuristic opening overlay */}
+        <Animated.View
+          style={[
+            styles.openingOverlay,
+            {
+              backgroundColor: theme.background,
+              opacity: overlayOpacity,
+            },
+          ]}
+          pointerEvents="none"
+        />
+
+        {/* Context message - appears on top of everything before map reveals */}
         <MapContextMessage
           noteCount={nearbyNotes.length}
-          placeCount={placeGroups.length}
-          isMapMoving={isMapMoving}
+          opacity={messageOpacity}
+          isLoading={isLoadingLocation}
         />
       </View>
 
@@ -283,8 +329,14 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
+  mapWrapper: {
+    flex: 1,
+  },
   map: {
     flex: 1,
+  },
+  openingOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   centerContent: {
     flex: 1,

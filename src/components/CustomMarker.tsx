@@ -7,12 +7,14 @@ interface CustomMarkerProps {
   coordinate: { latitude: number; longitude: number };
   noteCount: number;
   onPress: () => void;
+  zoomScale?: number;
 }
 
 export const CustomMarker: React.FC<CustomMarkerProps> = ({
   coordinate,
   noteCount,
   onPress,
+  zoomScale = 1.0,
 }) => {
   const { theme } = useTheme();
 
@@ -38,7 +40,8 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
     return 1;
   };
 
-  const size = getMarkerSize();
+  const baseSize = getMarkerSize();
+  const size = baseSize * zoomScale; // Scale size based on zoom level
   const baseOpacity = getMarkerOpacity();
 
   // Entry animation (once on mount)
@@ -92,23 +95,35 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
     }, initialDelay);
   };
 
+  // Extended hit area for easier tapping (1.7x visual size)
+  const hitAreaSize = size * 1.7;
+
   return (
     <Marker coordinate={coordinate} onPress={onPress} tracksViewChanges={false}>
       <Animated.View
-        style={[
-          styles.markerContainer,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            backgroundColor: theme.primaryDark,
-            opacity: Animated.multiply(
-              Animated.multiply(entryOpacity, breatheOpacity),
-              baseOpacity
-            ),
-          },
-        ]}
-      />
+        style={{
+          width: hitAreaSize,
+          height: hitAreaSize,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Animated.View
+          style={[
+            styles.markerContainer,
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              backgroundColor: theme.primaryDark,
+              opacity: Animated.multiply(
+                Animated.multiply(entryOpacity, breatheOpacity),
+                baseOpacity
+              ),
+            },
+          ]}
+        />
+      </Animated.View>
     </Marker>
   );
 };
