@@ -85,6 +85,22 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
     onClose();
   };
 
+  const getLocationCoordinates = () => {
+    if (selectedLocation) {
+      return {
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+      };
+    }
+    if (currentLatitude !== null && currentLongitude !== null) {
+      return {
+        latitude: currentLatitude,
+        longitude: currentLongitude,
+      };
+    }
+    return null;
+  };
+
   const handleSendNoteCreate = (text: string, duration: Duration, radius: Radius) => {
     if (!selectedLocation) return;
     onCreate(text, duration, radius, selectedLocation);
@@ -120,6 +136,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
               onCreate={handleLeaveNoteCreate}
               locationName={getLocationName()}
               locationDescription={getLocationDescription()}
+              coordinates={getLocationCoordinates()}
             />
           ) : (
             <SendNoteComposer

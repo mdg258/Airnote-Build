@@ -6,9 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
+import MapView, { Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { spacing, borderRadius } from '../theme/colors';
+import { spacing } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { Duration, Radius } from '../types/note';
 import {
@@ -21,16 +23,22 @@ interface LeaveNoteComposerProps {
   onCreate: (text: string, duration: Duration, radius: Radius, category: LeaveNoteCategory) => void;
   locationName: string;
   locationDescription?: string;
+  coordinates?: { latitude: number; longitude: number } | null;
 }
 
 export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
   onBack,
   onCreate,
   locationName,
+  coordinates,
 }) => {
   const { theme } = useTheme();
   const [text, setText] = useState('');
   const [category, setCategory] = useState<LeaveNoteCategory>('info');
+
+  const latitude = coordinates?.latitude ?? 37.7749;
+  const longitude = coordinates?.longitude ?? -122.4194;
+  const radius = 91.44; // 300ft
 
   const handleSubmit = () => {
     if (text.trim()) {
@@ -47,65 +55,28 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="chevron-back" size={26} color={theme.text.secondary} />
         </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.locationName, { color: theme.text.primary }]} numberOfLines={1}>
-            {locationName}
-          </Text>
-        </View>
+        <Text style={[styles.locationName, { color: theme.text.tertiary }]} numberOfLines={1}>
+          {locationName}
+        </Text>
         <View style={{ width: 26 }} />
       </View>
 
+      {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Category Pills */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryContainer}
-        >
-          {LEAVE_NOTE_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[
-                styles.categoryPill,
-                {
-                  backgroundColor: category === cat.id ? cat.color : theme.background,
-                  borderColor: category === cat.id ? cat.color : theme.cardBorder,
-                },
-              ]}
-              onPress={() => setCategory(cat.id)}
-            >
-              <Text style={styles.categoryIcon}>{cat.icon}</Text>
-              <Text
-                style={[
-                  styles.categoryText,
-                  {
-                    color: category === cat.id ? '#FFFFFF' : theme.text.secondary,
-                  },
-                ]}
-              >
-                {cat.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         {/* Text Input */}
-        <View style={styles.inputSection}>
+        <View style={[styles.inputCard, { backgroundColor: theme.card }]}>
           <TextInput
             style={[
               styles.textInput,
-              {
-                backgroundColor: theme.background,
-                color: theme.text.primary,
-              },
+              { color: theme.text.primary },
             ]}
-            placeholder="What should people know?"
-            placeholderTextColor={theme.text.tertiary}
+            placeholder="What's happening here?"
+            placeholderTextColor={theme.text.tertiary + '80'}
             value={text}
             onChangeText={setText}
             multiline
@@ -117,16 +88,65 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           </Text>
         </View>
 
-        {/* Footer Info */}
-        <View style={styles.footer}>
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={16} color={theme.text.tertiary} />
-            <Text style={[styles.infoText, { color: theme.text.tertiary }]}>300ft radius</Text>
+        {/* Category Pills */}
+        <View style={styles.categoryContainer}>
+          {LEAVE_NOTE_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.categoryPill,
+                {
+                  backgroundColor: category === cat.id ? cat.color + '20' : theme.card,
+                  borderColor: category === cat.id ? cat.color + '40' : theme.cardBorder + '60',
+                },
+              ]}
+              onPress={() => setCategory(cat.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.categoryEmoji}>{cat.icon}</Text>
+              <Text
+                style={[
+                  styles.categoryText,
+                  {
+                    color: category === cat.id ? cat.color : theme.text.secondary,
+                    fontWeight: category === cat.id ? '600' : '500',
+                  },
+                ]}
+              >
+                {cat.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Map Preview */}
+        <View style={styles.mapSection}>
+          <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
+            <MapView
+              style={styles.map}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              region={{
+                latitude,
+                longitude,
+                latitudeDelta: (radius * 4) / 111000,
+                longitudeDelta: (radius * 4) / 111000,
+              }}
+            >
+              <Circle
+                center={{ latitude, longitude }}
+                radius={radius}
+                fillColor={(selectedCategory?.color || '#2ECC71') + '18'}
+                strokeColor={(selectedCategory?.color || '#2ECC71') + 'CC'}
+                strokeWidth={1.5}
+              />
+            </MapView>
           </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={16} color={theme.text.tertiary} />
-            <Text style={[styles.infoText, { color: theme.text.tertiary }]}>1 hour</Text>
-          </View>
+          <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
+            Visible within 300 ft · 1 hour
+          </Text>
         </View>
       </ScrollView>
 
@@ -136,12 +156,13 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           style={[
             styles.submitButton,
             {
-              backgroundColor: text.trim() ? selectedCategory?.color || '#4A90E2' : theme.cardBorder,
+              backgroundColor: text.trim() ? (selectedCategory?.color || theme.primaryDark) : theme.cardBorder,
+              opacity: text.trim() ? 1 : 0.5,
             },
           ]}
           onPress={handleSubmit}
           disabled={!text.trim()}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
           <Text style={styles.submitButtonText}>Place Note</Text>
         </TouchableOpacity>
@@ -159,90 +180,106 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  headerContent: {
-    flex: 1,
-    alignItems: 'center',
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 0,
   },
   locationName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+    opacity: 0.6,
   },
   scrollView: {
     flex: 1,
   },
-  content: {
+  scrollContent: {
     paddingHorizontal: spacing.lg,
-    gap: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    gap: spacing.lg,
+  },
+  inputCard: {
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  textInput: {
+    fontSize: 20,
+    fontWeight: '400',
+    lineHeight: 28,
+    minHeight: 70,
+    maxHeight: 110,
+    textAlignVertical: 'top',
+    padding: 0,
+    margin: 0,
+  },
+  charCount: {
+    fontSize: 12,
+    textAlign: 'right',
+    marginTop: spacing.xs,
+    opacity: 0.5,
   },
   categoryContainer: {
-    gap: spacing.sm,
-    paddingVertical: spacing.xs,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
   },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    gap: spacing.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 0.5,
+    gap: 6,
   },
-  categoryIcon: {
-    fontSize: 18,
+  categoryEmoji: {
+    fontSize: 15,
   },
   categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  inputSection: {
-    gap: spacing.xs,
-  },
-  textInput: {
-    fontSize: 17,
-    lineHeight: 24,
-    minHeight: 120,
-    textAlignVertical: 'top',
-    padding: 0,
-  },
-  charCount: {
     fontSize: 13,
-    textAlign: 'right',
+    letterSpacing: -0.1,
   },
-  footer: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    paddingTop: spacing.sm,
+  mapSection: {
+    gap: spacing.sm,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+  mapContainer: {
+    height: 180,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
-  infoText: {
-    fontSize: 13,
-    fontWeight: '500',
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  mapCaption: {
+    fontSize: 12,
+    fontWeight: '400',
+    textAlign: 'center',
+    letterSpacing: -0.1,
+    opacity: 0.6,
   },
   buttonContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.lg,
+    paddingTop: spacing.md,
   },
   submitButton: {
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.md,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    letterSpacing: -0.3,
   },
 });

@@ -59,11 +59,9 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="chevron-back" size={26} color={theme.text.secondary} />
         </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.locationName, { color: theme.text.primary }]} numberOfLines={1}>
-            {locationName}
-          </Text>
-        </View>
+        <Text style={[styles.locationName, { color: theme.text.tertiary }]} numberOfLines={1}>
+          {locationName}
+        </Text>
         <View style={{ width: 26 }} />
       </View>
 
@@ -74,17 +72,14 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         keyboardShouldPersistTaps="handled"
       >
         {/* Text Input */}
-        <View style={styles.inputSection}>
+        <View style={[styles.inputCard, { backgroundColor: theme.card }]}>
           <TextInput
             style={[
               styles.textInput,
-              {
-                backgroundColor: theme.background,
-                color: theme.text.primary,
-              },
+              { color: theme.text.primary },
             ]}
-            placeholder="What do you want to share?"
-            placeholderTextColor={theme.text.tertiary}
+            placeholder="What's on your mind?"
+            placeholderTextColor={theme.text.tertiary + '80'}
             value={text}
             onChangeText={setText}
             multiline
@@ -99,8 +94,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         {/* Urgency Control */}
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
-            <Text style={[styles.controlLabel, { color: theme.text.secondary }]}>Urgency</Text>
-            <View style={[styles.urgencyBadge, { backgroundColor: currentUrgency.color + '15' }]}>
+            <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Urgency</Text>
+            <View style={[styles.urgencyBadge, { backgroundColor: currentUrgency.color + '18' }]}>
               <Text style={styles.urgencyEmoji}>{currentUrgency.emoji}</Text>
               <Text style={[styles.urgencyText, { color: currentUrgency.color }]}>
                 {currentUrgency.label}
@@ -115,7 +110,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
             value={urgencyIndex}
             onValueChange={setUrgencyIndex}
             minimumTrackTintColor={currentUrgency.color}
-            maximumTrackTintColor={theme.cardBorder}
+            maximumTrackTintColor={theme.cardBorder + '60'}
             thumbTintColor={currentUrgency.color}
           />
           <View style={styles.sliderLabels}>
@@ -126,7 +121,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                   styles.sliderLabel,
                   {
                     color: urgencyIndex === index ? level.color : theme.text.tertiary,
-                    fontWeight: urgencyIndex === index ? '600' : '500',
+                    fontWeight: urgencyIndex === index ? '600' : '400',
+                    opacity: urgencyIndex === index ? 1 : 0.5,
                   },
                 ]}
               >
@@ -139,8 +135,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         {/* Range Control */}
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
-            <Text style={[styles.controlLabel, { color: theme.text.secondary }]}>Range</Text>
-            <Text style={[styles.rangeValue, { color: theme.primaryDark }]}>
+            <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Range</Text>
+            <Text style={[styles.rangeValue, { color: currentUrgency.color }]}>
               {RADII.find((r) => r.value === radius)?.label}
             </Text>
           </View>
@@ -151,8 +147,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                 style={[
                   styles.rangeOption,
                   {
-                    backgroundColor: radius === r.value ? theme.primaryDark : theme.background,
-                    borderColor: radius === r.value ? theme.primaryDark : theme.cardBorder,
+                    backgroundColor: radius === r.value ? currentUrgency.color + '15' : theme.card,
+                    borderColor: radius === r.value ? currentUrgency.color + '50' : theme.cardBorder + '60',
                   },
                 ]}
                 onPress={() => setRadius(r.value)}
@@ -161,8 +157,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                   style={[
                     styles.rangeText,
                     {
-                      color: radius === r.value ? '#FFFFFF' : theme.text.secondary,
-                      fontWeight: radius === r.value ? '700' : '500',
+                      color: radius === r.value ? currentUrgency.color : theme.text.secondary,
+                      fontWeight: radius === r.value ? '600' : '500',
                     },
                   ]}
                 >
@@ -181,14 +177,15 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
             styles.submitButton,
             {
               backgroundColor: text.trim() ? currentUrgency.color : theme.cardBorder,
+              opacity: text.trim() ? 1 : 0.5,
             },
           ]}
           onPress={handleSubmit}
           disabled={!text.trim()}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Text style={styles.submitButtonText}>Send</Text>
-          <Ionicons name="paper-plane" size={16} color="#FFFFFF" />
+          <Text style={styles.submitButtonText}>Send Note</Text>
+          <Ionicons name="paper-plane" size={17} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -204,37 +201,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  headerContent: {
-    flex: 1,
-    alignItems: 'center',
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
   locationName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+    opacity: 0.6,
   },
   scrollView: {
     flex: 1,
   },
   content: {
     paddingHorizontal: spacing.lg,
-    gap: spacing.xl * 1.5,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    gap: spacing.xl,
   },
-  inputSection: {
-    gap: spacing.xs,
+  inputCard: {
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   textInput: {
-    fontSize: 17,
-    lineHeight: 24,
-    minHeight: 160,
+    fontSize: 18,
+    fontWeight: '400',
+    lineHeight: 26,
+    minHeight: 100,
+    maxHeight: 140,
     textAlignVertical: 'top',
     padding: 0,
+    margin: 0,
   },
   charCount: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'right',
+    marginTop: spacing.xs,
+    opacity: 0.5,
   },
   controlSection: {
     gap: spacing.md,
@@ -243,27 +248,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   controlLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    opacity: 0.7,
   },
   urgencyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    gap: spacing.xs,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    gap: 5,
   },
   urgencyEmoji: {
-    fontSize: 16,
+    fontSize: 14,
   },
   urgencyText: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
   },
   slider: {
     width: '100%',
@@ -273,49 +280,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.xs,
+    marginTop: -spacing.xs,
   },
   sliderLabel: {
-    fontSize: 12,
+    fontSize: 11,
+    letterSpacing: -0.1,
   },
   rangeValue: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
   rangeGrid: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   rangeOption: {
     flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 0.5,
     alignItems: 'center',
   },
   rangeText: {
-    fontSize: 14,
+    fontSize: 13,
+    letterSpacing: -0.1,
   },
   buttonContainer: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.md,
+    paddingVertical: 16,
+    borderRadius: 14,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    letterSpacing: -0.3,
   },
 });
