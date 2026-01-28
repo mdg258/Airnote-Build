@@ -111,41 +111,54 @@ export const HomeScreen: React.FC = () => {
 
   const renderNoteCard = (note: Note & { distance: number; timeLeft: number }, index: number) => {
     const commentCount = commentCounts.get(note.id) || 0;
+    const isExpiringSoon = note.timeLeft < 3600000; // Less than 1 hour
 
     return (
-      <View key={note.id}>
-        <TouchableOpacity
-          style={styles.noteItem}
-          onPress={() => {
-            setSelectedNote(note);
-            setNoteDetailModalVisible(true);
-          }}
-          activeOpacity={0.7}
+      <TouchableOpacity
+        key={note.id}
+        style={styles.noteItem}
+        onPress={() => {
+          setSelectedNote(note);
+          setNoteDetailModalVisible(true);
+        }}
+        activeOpacity={0.7}
+      >
+        {/* Message Text - Primary */}
+        <Text
+          style={[
+            styles.noteText,
+            {
+              color: theme.text.primary,
+              fontSize: 19 * textScale,
+              opacity: isExpiringSoon ? 1 : 0.95,
+              fontWeight: isExpiringSoon ? '500' : '400',
+            }
+          ]}
         >
-          {/* Note Text - Primary Focus */}
-          <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 19 * textScale }]}>
-            {note.text}
-          </Text>
+          {note.text}
+        </Text>
 
-          {/* Metadata - Secondary */}
-          <View style={styles.metadataRow}>
-            <Text style={[styles.metadataText, { color: theme.text.secondary, fontSize: 13 * textScale }]}>
-              {note.placeName || 'Unknown Location'} · {formatDistance(note.distance)} · {formatTimeLeft(note.timeLeft)}
+        {/* Metadata Row - Secondary */}
+        <View style={styles.metadataContainer}>
+          <View style={styles.primaryMeta}>
+            <Text style={[styles.timeDistance, { color: theme.text.secondary, fontSize: 13 * textScale }]}>
+              {formatTimeLeft(note.timeLeft)} · {formatDistance(note.distance)}
             </Text>
             {commentCount > 0 && (
               <View style={styles.commentBadge}>
-                <Ionicons name="chatbubble" size={11} color={theme.text.secondary} />
-                <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 13 * textScale }]}>
+                <Ionicons name="chatbubble" size={11} color={theme.text.secondary} style={{ opacity: 0.7 }} />
+                <Text style={[styles.commentCount, { color: theme.text.secondary, fontSize: 12 * textScale }]}>
                   {commentCount}
                 </Text>
               </View>
             )}
           </View>
-        </TouchableOpacity>
-        {index < sortedNotes.length - 1 && (
-          <View style={[styles.divider, { backgroundColor: theme.primaryDark }]} />
-        )}
-      </View>
+          {/* Location - Tertiary */}
+          <Text style={[styles.locationText, { color: theme.text.tertiary, fontSize: 12 * textScale }]} numberOfLines={1}>
+            {note.placeName || 'Unknown Location'}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -239,14 +252,14 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.md,
     alignItems: 'center',
   },
   appTitle: {
     fontSize: 36,
     fontFamily: 'Coolvetica',
     letterSpacing: -0.5,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   locationRow: {
     flexDirection: 'row',
@@ -254,59 +267,65 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   greenDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    opacity: 0.7,
   },
   locationHeader: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '400',
-    opacity: 0.6,
+    opacity: 0.45,
+    letterSpacing: -0.1,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingTop: spacing.xs,
+    paddingTop: spacing.sm,
     paddingBottom: 100,
   },
   noteItem: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
-    gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   noteText: {
     fontSize: 19,
     lineHeight: 26,
     fontWeight: '400',
     letterSpacing: -0.3,
-    marginBottom: 2,
+    marginBottom: spacing.sm,
   },
-  metadataRow: {
+  metadataContainer: {
+    gap: 4,
+  },
+  primaryMeta: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     gap: spacing.sm,
   },
-  metadataText: {
+  timeDistance: {
     fontSize: 13,
-    fontWeight: '400',
-    flex: 1,
-    opacity: 0.7,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+    opacity: 0.75,
   },
   commentBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   commentCount: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '400',
+    opacity: 0.7,
   },
-  divider: {
-    height: 0.5,
-    marginLeft: spacing.lg,
-    opacity: 0.25,
+  locationText: {
+    fontSize: 12,
+    fontWeight: '400',
+    letterSpacing: -0.05,
+    opacity: 0.55,
   },
   emptyState: {
     flex: 1,
