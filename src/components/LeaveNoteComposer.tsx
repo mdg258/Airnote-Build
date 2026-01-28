@@ -52,17 +52,19 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
     }
   };
 
+  const showCharCount = text.length > 80;
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={26} color={theme.text.secondary} />
+        <TouchableOpacity onPress={onBack} hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}>
+          <Ionicons name="chevron-back" size={28} color={theme.text.secondary} style={{ opacity: 0.6 }} />
         </TouchableOpacity>
-        <Text style={[styles.locationName, { color: theme.text.tertiary, fontSize: 12 * textScale }]} numberOfLines={1}>
+        <Text style={[styles.locationName, { color: theme.text.tertiary, fontSize: 13 * textScale }]} numberOfLines={1}>
           {locationName}
         </Text>
-        <View style={{ width: 26 }} />
+        <View style={{ width: 28 }} />
       </View>
 
       {/* Scrollable Content */}
@@ -72,54 +74,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Text Input */}
-        <View style={[styles.inputCard, { backgroundColor: theme.card }]}>
-          <TextInput
-            style={[
-              styles.textInput,
-              { color: theme.text.primary, fontSize: 20 * textScale },
-            ]}
-            placeholder="What's happening here?"
-            placeholderTextColor={theme.text.tertiary + '80'}
-            value={text}
-            onChangeText={setText}
-            multiline
-            maxLength={100}
-            autoFocus
-          />
-          <Text style={[styles.charCount, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
-            {text.length}/100
-          </Text>
-        </View>
-
-        {/* Location Picker */}
-        {locationOptions.length > 1 && (
-          <View style={styles.locationSection}>
-            <Text style={[styles.sectionLabel, { color: theme.text.tertiary, fontSize: 11 * textScale }]}>LOCATION</Text>
-            <TouchableOpacity
-              style={[styles.locationButton, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
-              onPress={() => setLocationPickerVisible(true)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.locationButtonContent}>
-                <Ionicons name="location" size={18} color={theme.primaryDark} />
-                <View style={styles.locationTextContainer}>
-                  <Text style={[styles.locationButtonText, { color: theme.text.primary, fontSize: 15 * textScale }]} numberOfLines={1}>
-                    {selectedLocation?.name || locationName}
-                  </Text>
-                  {selectedLocation?.description && (
-                    <Text style={[styles.locationButtonSubtext, { color: theme.text.tertiary, fontSize: 13 * textScale }]} numberOfLines={1}>
-                      {selectedLocation.description}
-                    </Text>
-                  )}
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.text.tertiary} />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Map Preview */}
+        {/* Map - Confirmational */}
         <View style={styles.mapSection}>
           <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
             <MapView
@@ -135,40 +90,80 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               region={{
                 latitude,
                 longitude,
-                latitudeDelta: (radius * 3) / 111000,
-                longitudeDelta: (radius * 3) / 111000,
+                latitudeDelta: (radius * 4) / 111000,
+                longitudeDelta: (radius * 4) / 111000,
               }}
             >
               <Circle
                 center={{ latitude, longitude }}
                 radius={radius}
-                fillColor={theme.primaryDark + '18'}
-                strokeColor={theme.primaryDark + 'CC'}
-                strokeWidth={1.5}
+                fillColor={theme.primaryDark + '12'}
+                strokeColor={theme.primaryDark + '80'}
+                strokeWidth={1}
               />
             </MapView>
           </View>
-          <Text style={[styles.mapCaption, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
-            Visible within 50ft · 1 hour
+          <Text style={[styles.mapCaption, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+            This note will be visible here.
           </Text>
+        </View>
+
+        {/* Location Picker - Natural language */}
+        {locationOptions.length > 1 && (
+          <TouchableOpacity
+            style={styles.locationSection}
+            onPress={() => setLocationPickerVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.locationLabel, { color: theme.text.secondary, fontSize: 16 * textScale }]}>
+              {selectedLocation?.name || locationName}
+            </Text>
+            {selectedLocation?.description && (
+              <Text style={[styles.locationSubtext, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+                {selectedLocation.description}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Text Input - Borderless, natural */}
+        <View style={styles.textSection}>
+          <TextInput
+            style={[
+              styles.textInput,
+              { color: theme.text.primary, fontSize: 22 * textScale },
+            ]}
+            placeholder="What should someone nearby know?"
+            placeholderTextColor={theme.text.tertiary}
+            value={text}
+            onChangeText={setText}
+            multiline
+            maxLength={100}
+            autoFocus
+          />
+          {showCharCount && (
+            <Text style={[styles.charCount, { color: theme.text.tertiary, fontSize: 12 * textScale }]}>
+              {text.length}/100
+            </Text>
+          )}
         </View>
       </ScrollView>
 
-      {/* Submit Button */}
+      {/* Submit Button - Calm completion */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[
             styles.submitButton,
             {
               backgroundColor: text.trim() ? theme.primaryDark : theme.cardBorder,
-              opacity: text.trim() ? 1 : 0.5,
+              opacity: text.trim() ? 1 : 0.4,
             },
           ]}
           onPress={handleSubmit}
           disabled={!text.trim()}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.submitButtonText, { fontSize: 17 * textScale }]}>Place Note</Text>
+          <Text style={[styles.submitButtonText, { fontSize: 18 * textScale }]}>Done</Text>
         </TouchableOpacity>
       </View>
 
@@ -184,16 +179,18 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
           activeOpacity={1}
           onPress={() => setLocationPickerVisible(false)}
         >
-          <View style={[styles.locationPickerContainer, { backgroundColor: theme.card }]}>
-            <View style={[styles.pickerHeader, { borderBottomColor: theme.cardBorder }]}>
-              <Text style={[styles.pickerTitle, { color: theme.text.primary, fontSize: 18 * textScale }]}>Choose Location</Text>
+          <View style={[styles.locationPickerContainer, { backgroundColor: theme.background }]}>
+            <View style={styles.pickerHeader}>
+              <Text style={[styles.pickerTitle, { color: theme.text.primary, fontSize: 18 * textScale }]}>
+                Choose location
+              </Text>
             </View>
             {locationOptions.map((location, index) => (
               <TouchableOpacity
                 key={location.id}
                 style={[
                   styles.locationOption,
-                  { borderBottomColor: theme.cardBorder },
+                  { backgroundColor: theme.card },
                   index === locationOptions.length - 1 && { borderBottomWidth: 0 },
                 ]}
                 onPress={() => {
@@ -202,11 +199,9 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
                 }}
               >
                 <View style={styles.locationOptionContent}>
-                  <Ionicons
-                    name={location.id === 'current' ? 'navigate' : 'location'}
-                    size={20}
-                    color={selectedLocation?.id === location.id ? theme.primaryDark : theme.text.secondary}
-                  />
+                  {location.id === 'current' && (
+                    <View style={[styles.currentLocationDot, { backgroundColor: theme.primaryDark }]} />
+                  )}
                   <View style={styles.locationOptionTextContainer}>
                     <Text style={[styles.locationOptionText, { color: theme.text.primary, fontSize: 16 * textScale }]}>
                       {location.name}
@@ -218,8 +213,8 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
                     )}
                   </View>
                 </View>
-                {selectedLocation?.id === location.id && (
-                  <Ionicons name="checkmark" size={20} color={theme.primaryDark} />
+                {selectedLocation?.id === location.id && location.id !== 'current' && (
+                  <View style={[styles.selectedIndicator, { backgroundColor: theme.primaryDark }]} />
                 )}
               </TouchableOpacity>
             ))}
@@ -241,51 +236,63 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-    borderBottomWidth: 0,
   },
   locationName: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     letterSpacing: -0.1,
-    opacity: 0.6,
+    opacity: 0.5,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
-  inputCard: {
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+  textSection: {
+    gap: spacing.sm,
   },
   textInput: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '400',
-    lineHeight: 28,
+    lineHeight: 32,
     minHeight: 70,
-    maxHeight: 110,
     textAlignVertical: 'top',
     padding: 0,
     margin: 0,
+    letterSpacing: -0.3,
   },
   charCount: {
     fontSize: 12,
     textAlign: 'right',
-    marginTop: spacing.xs,
+    opacity: 0.4,
+    letterSpacing: -0.1,
+  },
+  locationSection: {
+    paddingVertical: spacing.sm,
+  },
+  locationLabel: {
+    fontSize: 16,
+    fontWeight: '400',
+    letterSpacing: -0.2,
+    opacity: 0.85,
+    marginBottom: 4,
+  },
+  locationSubtext: {
+    fontSize: 14,
+    fontWeight: '400',
+    letterSpacing: -0.1,
     opacity: 0.5,
   },
   mapSection: {
     gap: spacing.sm,
   },
   mapContainer: {
-    height: 180,
-    borderRadius: 18,
+    height: 140,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   map: {
@@ -293,70 +300,27 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   mapCaption: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '400',
     textAlign: 'center',
     letterSpacing: -0.1,
-    opacity: 0.6,
+    opacity: 0.5,
   },
   buttonContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: Platform.OS === 'ios' ? spacing.lg : spacing.lg,
     paddingTop: spacing.md,
   },
   submitButton: {
-    paddingVertical: 16,
-    borderRadius: 14,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.3,
-  },
-  locationSection: {
-    gap: spacing.xs,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    opacity: 0.7,
-    marginBottom: 4,
-  },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 0.5,
-  },
-  locationButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  locationTextContainer: {
-    flex: 1,
-  },
-  locationButtonText: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '500',
-    marginBottom: 2,
-  },
-  locationButtonSubtext: {
-    fontSize: 12,
-    opacity: 0.6,
+    letterSpacing: -0.3,
   },
   modalOverlay: {
     flex: 1,
@@ -368,48 +332,61 @@ const styles = StyleSheet.create({
   locationPickerContainer: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderRadius: 20,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
   pickerHeader: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: 0.5,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.md,
   },
   pickerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '500',
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
   locationOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: 0.5,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.xl,
+    position: 'relative',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.xs,
+    borderRadius: 12,
   },
   locationOptionContent: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    flex: 1,
+    gap: spacing.sm,
+  },
+  currentLocationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   locationOptionTextContainer: {
     flex: 1,
   },
   locationOptionText: {
-    fontSize: 15,
-    fontWeight: '500',
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '400',
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
   locationOptionSubtext: {
-    fontSize: 12,
-    opacity: 0.6,
+    fontSize: 14,
+    opacity: 0.5,
+    letterSpacing: -0.1,
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    right: spacing.xl,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });
