@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Marker } from 'react-native-maps';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CustomMarkerProps {
   coordinate: { latitude: number; longitude: number };
@@ -13,18 +14,14 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
   noteCount,
   onPress,
 }) => {
-  const getMarkerColor = (count: number): string => {
-    if (count >= 10) return '#FF3B30'; // Red
-    if (count >= 5) return '#FF9500';  // Orange
-    if (count >= 2) return '#FFCC00';  // Yellow
-    return '#74B7B1';                  // Primary teal
-  };
-
-  const markerColor = getMarkerColor(noteCount);
+  const { theme } = useTheme();
 
   return (
     <Marker coordinate={coordinate} onPress={onPress} tracksViewChanges={false}>
-      <View style={[styles.markerContainer, { backgroundColor: markerColor }]}>
+      <View style={[styles.markerContainer, {
+        backgroundColor: theme.primaryDark,
+        borderColor: theme.background,
+      }]}>
         {noteCount > 1 ? (
           <Text style={styles.markerText}>{noteCount}</Text>
         ) : (
@@ -37,28 +34,27 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
 
 const styles = StyleSheet.create({
   markerContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderWidth: 4,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
   },
   markerText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
   markerDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
 });
