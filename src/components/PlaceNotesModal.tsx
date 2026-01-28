@@ -118,6 +118,11 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Green Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={[styles.divider, { backgroundColor: theme.primaryDark }]} />
+          </View>
+
           {/* Notes List - Flat, text-forward */}
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -201,6 +206,14 @@ const styles = StyleSheet.create({
   closeIcon: {
     fontSize: 20,
     opacity: 0.3,
+  },
+  dividerContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  divider: {
+    height: 1,
+    opacity: 0.2,
   },
   scrollContent: {
     paddingHorizontal: spacing.xl,
