@@ -11,8 +11,7 @@ import {
 import { PlaceGroup } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
-import { formatDistance } from '../utils/location';
-import { NoteCard } from './NoteCard';
+import { formatDistance, formatTimeLeft } from '../utils/location';
 
 interface PlaceNotesModalProps {
   visible: boolean;
@@ -85,13 +84,24 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {placeGroup.notes.map((note) => (
-              <NoteCard
+            {placeGroup.notes.map((note, index) => (
+              <View
                 key={note.id}
-                note={note}
-                timeLeft={note.timeLeft}
-                showLocation={true}
-              />
+                style={[
+                  styles.noteItem,
+                  { backgroundColor: theme.background, borderColor: theme.cardBorder },
+                  index === placeGroup.notes.length - 1 && { marginBottom: 0 },
+                ]}
+              >
+                <Text style={[styles.noteText, { color: theme.text.primary }]}>
+                  {note.text}
+                </Text>
+                <View style={styles.noteMeta}>
+                  <Text style={[styles.noteMetaText, { color: theme.text.tertiary }]}>
+                    {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+                  </Text>
+                </View>
+              </View>
             ))}
             <View style={styles.bottomSpacer} />
           </ScrollView>
@@ -160,6 +170,26 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  noteItem: {
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    borderWidth: 0.5,
+  },
+  noteText: {
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: '400',
+    marginBottom: spacing.xs,
+  },
+  noteMeta: {
+    flexDirection: 'row',
+  },
+  noteMetaText: {
+    fontSize: 14,
+    lineHeight: 18,
   },
   bottomSpacer: {
     height: spacing.md,

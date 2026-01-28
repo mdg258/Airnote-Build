@@ -101,9 +101,9 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
             <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Urgency</Text>
-            <View style={[styles.urgencyBadge, { backgroundColor: currentUrgency.color + '18' }]}>
+            <View style={[styles.urgencyBadge, { backgroundColor: theme.primaryDark + '18' }]}>
               <Text style={styles.urgencyEmoji}>{currentUrgency.emoji}</Text>
-              <Text style={[styles.urgencyText, { color: currentUrgency.color }]}>
+              <Text style={[styles.urgencyText, { color: theme.primaryDark }]}>
                 {currentUrgency.label}
               </Text>
             </View>
@@ -115,9 +115,9 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
             step={1}
             value={urgencyIndex}
             onValueChange={setUrgencyIndex}
-            minimumTrackTintColor={currentUrgency.color}
+            minimumTrackTintColor={theme.primaryDark}
             maximumTrackTintColor={theme.cardBorder + '60'}
-            thumbTintColor={currentUrgency.color}
+            thumbTintColor={theme.primaryDark}
           />
           <View style={styles.sliderLabels}>
             {URGENCY_LEVELS.map((level, index) => (
@@ -126,7 +126,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                 style={[
                   styles.sliderLabel,
                   {
-                    color: urgencyIndex === index ? level.color : theme.text.tertiary,
+                    color: urgencyIndex === index ? theme.primaryDark : theme.text.tertiary,
                     fontWeight: urgencyIndex === index ? '600' : '400',
                     opacity: urgencyIndex === index ? 1 : 0.5,
                   },
@@ -142,7 +142,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
         <View style={styles.controlSection}>
           <View style={styles.controlHeader}>
             <Text style={[styles.controlLabel, { color: theme.text.tertiary }]}>Range</Text>
-            <Text style={[styles.rangeValue, { color: currentUrgency.color }]}>
+            <Text style={[styles.rangeValue, { color: theme.primaryDark }]}>
               {RADII.find((r) => r.value === radius)?.label}
             </Text>
           </View>
@@ -153,8 +153,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                 style={[
                   styles.rangeOption,
                   {
-                    backgroundColor: radius === r.value ? currentUrgency.color + '15' : theme.card,
-                    borderColor: radius === r.value ? currentUrgency.color + '50' : theme.cardBorder + '60',
+                    backgroundColor: radius === r.value ? theme.primaryDark + '15' : theme.card,
+                    borderColor: radius === r.value ? theme.primaryDark + '50' : theme.cardBorder + '60',
                   },
                 ]}
                 onPress={() => setRadius(r.value)}
@@ -163,7 +163,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
                   style={[
                     styles.rangeText,
                     {
-                      color: radius === r.value ? currentUrgency.color : theme.text.secondary,
+                      color: radius === r.value ? theme.primaryDark : theme.text.secondary,
                       fontWeight: radius === r.value ? '600' : '500',
                     },
                   ]}
@@ -194,8 +194,8 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
               <Circle
                 center={{ latitude, longitude }}
                 radius={radius}
-                fillColor={currentUrgency.color + '18'}
-                strokeColor={currentUrgency.color + 'CC'}
+                fillColor={theme.primaryDark + '18'}
+                strokeColor={theme.primaryDark + 'CC'}
                 strokeWidth={1.5}
               />
             </MapView>
@@ -212,7 +212,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
           style={[
             styles.submitButton,
             {
-              backgroundColor: text.trim() ? currentUrgency.color : theme.cardBorder,
+              backgroundColor: text.trim() ? theme.primaryDark : theme.cardBorder,
               opacity: text.trim() ? 1 : 0.5,
             },
           ]}
@@ -262,9 +262,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   textInput: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '400',
-    lineHeight: 26,
+    lineHeight: 28,
     minHeight: 100,
     maxHeight: 140,
     textAlignVertical: 'top',
