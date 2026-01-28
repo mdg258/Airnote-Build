@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,12 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
+  Animated,
 } from 'react-native';
 import { PlaceGroup, Note } from '../types/note';
 import { spacing, borderRadius } from '../theme/colors';
 import { useTheme } from '../contexts/ThemeContext';
-import { formatDistance, formatTimeLeft } from '../utils/location';
+import { formatTimeLeft } from '../utils/location';
 import { commentsService } from '../services/commentsService';
 
 interface PlaceNotesModalProps {
@@ -33,6 +34,7 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
 }) => {
   const { theme, textScale } = useTheme();
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+  const noteOpacities = useRef<Animated.Value[]>([]).current;
 
   // Load comment counts when modal opens
   useEffect(() => {
@@ -41,21 +43,57 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
     const noteIds = placeGroup.notes.map(n => n.id);
     const counts = commentsService.getCommentCounts(noteIds);
     setCommentCounts(counts);
+
+    // Initialize animation values for each note
+    noteOpacities.length = 0;
+    placeGroup.notes.forEach(() => {
+      noteOpacities.push(new Animated.Value(0));
+    });
+
+    // Stagger fade-in animation for notes
+    const animations = noteOpacities.map((opacity, index) => {
+      return Animated.timing(opacity, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 60, // 60ms stagger between notes
+        useNativeDriver: true,
+      });
+    });
+
+    Animated.parallel(animations).start();
   }, [placeGroup, visible]);
 
   if (!placeGroup) return null;
 
-  // Calculate distance to place from user
-  const distanceToPlace =
-    userLatitude !== null && userLongitude !== null
-      ? formatDistance(placeGroup.closestDistance)
-      : null;
+  // Get soft language for note count
+  const getSoftCount = (count: number): string => {
+    if (count === 1) return 'A note here';
+    if (count === 2) return 'A couple notes here';
+    if (count <= 4) return 'A few notes here';
+    if (count <= 8) return 'Several notes here';
+    return 'Many notes here';
+  };
+
+  // Get human phrasing for distance
+  const getHumanDistance = (meters: number): string => {
+    if (meters < 50) return 'very close';
+    if (meters < 200) return 'nearby';
+    if (meters < 500) return 'close by';
+    return 'in the area';
+  };
+
+  // Format time quietly
+  const getQuietTime = (ms: number): string => {
+    const timeStr = formatTimeLeft(ms);
+    // Convert "2h 30m left" to "2h 30m"
+    return timeStr.replace(' left', '');
+  };
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
@@ -64,69 +102,53 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
           activeOpacity={1}
           onPress={onClose}
         />
-        <SafeAreaView style={[styles.modal, { backgroundColor: theme.card }]} edges={['bottom']}>
+        <SafeAreaView style={[styles.modal, { backgroundColor: theme.background }]} edges={['bottom']}>
           {/* Header */}
-          <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
+          <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Text style={[styles.title, { color: theme.text.primary, fontSize: 20 * textScale }]}>
+              <Text style={[styles.title, { color: theme.text.primary, fontSize: 22 * textScale }]}>
                 {placeGroup.placeName}
               </Text>
-              {placeGroup.placeAddress && (
-                <Text style={[styles.address, { color: theme.text.secondary, fontSize: 14 * textScale }]} numberOfLines={1}>
-                  {placeGroup.placeAddress}
-                </Text>
-              )}
-              <View style={styles.metadataRow}>
-                {distanceToPlace && (
-                  <Text style={[styles.distance, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
-                    {distanceToPlace} away
-                  </Text>
-                )}
-                <Text style={[styles.noteCount, { color: theme.primaryDark, fontSize: 13 * textScale }]}>
-                  {placeGroup.noteCount} {placeGroup.noteCount === 1 ? 'note' : 'notes'}
-                </Text>
-              </View>
+              <Text style={[styles.subtitle, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
+                {getSoftCount(placeGroup.noteCount)}
+              </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={[styles.closeIcon, { color: theme.text.secondary }]}>✕</Text>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+              <Text style={[styles.closeIcon, { color: theme.text.tertiary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Notes List */}
+          {/* Notes List - Flat, text-forward */}
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
             {placeGroup.notes.map((note, index) => {
               const commentCount = commentCounts.get(note.id) || 0;
+              const opacity = noteOpacities[index] || new Animated.Value(1);
+
               return (
-                <TouchableOpacity
-                  key={note.id}
-                  style={[
-                    styles.noteItem,
-                    { backgroundColor: theme.background, borderColor: theme.cardBorder },
-                    index === placeGroup.notes.length - 1 && { marginBottom: 0 },
-                  ]}
-                  onPress={() => onNotePress?.(note)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 17 * textScale }]}>
-                    {note.text}
-                  </Text>
-                  <View style={styles.noteMeta}>
-                    <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}>
-                      {Math.round(note.radius * 3.28084)}ft · {formatTimeLeft(note.timeLeft)}
+                <Animated.View key={note.id} style={{ opacity }}>
+                  <TouchableOpacity
+                    style={styles.noteItem}
+                    onPress={() => onNotePress?.(note)}
+                    activeOpacity={0.6}
+                  >
+                    <Text style={[styles.noteText, { color: theme.text.primary, fontSize: 18 * textScale }]}>
+                      {note.text}
                     </Text>
-                    {commentCount > 0 && (
-                      <>
-                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 14 * textScale }]}> · </Text>
-                        <Text style={[styles.noteMetaText, { color: theme.primaryDark, fontSize: 14 * textScale }]}>
-                          {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+                    <View style={styles.noteMeta}>
+                      <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+                        {getHumanDistance(note.distance)} · {getQuietTime(note.timeLeft)}
+                      </Text>
+                      {commentCount > 0 && (
+                        <Text style={[styles.noteMetaText, { color: theme.text.tertiary, fontSize: 13 * textScale }]}>
+                          {' · '}{commentCount} {commentCount === 1 ? 'reply' : 'replies'}
                         </Text>
-                      </>
-                    )}
-                  </View>
-                </TouchableOpacity>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
               );
             })}
             <View style={styles.bottomSpacer} />
@@ -144,80 +166,67 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)', // Minimal dimming
   },
   modal: {
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
-    maxHeight: '80%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '75%',
+    paddingTop: spacing.xl * 2,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
   headerContent: {
     flex: 1,
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: '500',
+    letterSpacing: -0.3,
+    marginBottom: 6,
   },
-  address: {
+  subtitle: {
     fontSize: 14,
-    marginBottom: spacing.sm,
-  },
-  metadataRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  distance: {
-    fontSize: 13,
-  },
-  noteCount: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  closeButton: {
-    padding: spacing.sm,
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontWeight: '400',
+    letterSpacing: -0.1,
+    opacity: 0.5,
   },
   closeIcon: {
-    fontSize: 24,
+    fontSize: 20,
+    opacity: 0.3,
   },
   scrollContent: {
-    paddingTop: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
   },
   noteItem: {
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 0.5,
+    paddingVertical: spacing.lg,
   },
   noteText: {
-    fontSize: 17,
-    lineHeight: 23,
+    fontSize: 18,
+    lineHeight: 26,
     fontWeight: '400',
-    marginBottom: spacing.xs,
+    letterSpacing: -0.3,
+    marginBottom: spacing.sm,
   },
   noteMeta: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   noteMetaText: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 13,
+    fontWeight: '400',
+    letterSpacing: -0.1,
+    opacity: 0.4,
   },
   bottomSpacer: {
-    height: spacing.md,
+    height: spacing.xl,
   },
 });
