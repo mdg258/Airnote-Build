@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import MapView, { Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { spacing, borderRadius } from '../theme/colors';
@@ -18,6 +19,7 @@ interface SendNoteComposerProps {
   onCreate: (text: string, duration: Duration, radius: Radius) => void;
   locationName: string;
   locationDescription?: string;
+  coordinates?: { latitude: number; longitude: number } | null;
 }
 
 const RADII: Array<{ value: Radius; label: string }> = [
@@ -37,11 +39,15 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
   onBack,
   onCreate,
   locationName,
+  coordinates,
 }) => {
   const { theme } = useTheme();
   const [text, setText] = useState('');
   const [radius, setRadius] = useState<Radius>(45.72);
   const [urgencyIndex, setUrgencyIndex] = useState(1);
+
+  const latitude = coordinates?.latitude ?? 37.7749;
+  const longitude = coordinates?.longitude ?? -122.4194;
 
   const handleSubmit = () => {
     if (text.trim()) {
@@ -167,6 +173,36 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* Map Preview */}
+        <View style={styles.mapSection}>
+          <View style={[styles.mapContainer, { backgroundColor: theme.background }]}>
+            <MapView
+              style={styles.map}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              region={{
+                latitude,
+                longitude,
+                latitudeDelta: (radius * 4) / 111000,
+                longitudeDelta: (radius * 4) / 111000,
+              }}
+            >
+              <Circle
+                center={{ latitude, longitude }}
+                radius={radius}
+                fillColor={currentUrgency.color + '18'}
+                strokeColor={currentUrgency.color + 'CC'}
+                strokeWidth={1.5}
+              />
+            </MapView>
+          </View>
+          <Text style={[styles.mapCaption, { color: theme.text.tertiary }]}>
+            Broadcast range: {RADII.find(r => r.value === radius)?.label} · {currentUrgency.label}
+          </Text>
         </View>
       </ScrollView>
 
@@ -328,5 +364,24 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.3,
+  },
+  mapSection: {
+    gap: spacing.sm,
+  },
+  mapContainer: {
+    height: 160,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  mapCaption: {
+    fontSize: 12,
+    fontWeight: '400',
+    textAlign: 'center',
+    letterSpacing: -0.1,
+    opacity: 0.6,
   },
 });

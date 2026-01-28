@@ -154,6 +154,7 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
               onCreate={handleSendNoteCreate}
               locationName={getLocationName()}
               locationDescription={getLocationDescription()}
+              coordinates={getLocationCoordinates()}
             />
           )}
         </View>
