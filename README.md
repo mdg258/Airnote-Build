@@ -152,37 +152,176 @@ See the [Production Roadmap](#-production-roadmap) section for details.
 - **Clean iOS-inspired UI**: Minimal, airy design with custom color palette
 - **Real-time updates**: Feed automatically updates to show current distances and time remaining
 
-## Setup
+## 🚀 Quick Start - Running the App
 
 ### Prerequisites
 
-- Node.js (v16 or later)
-- npm or yarn
-- Expo CLI
-- iOS Simulator (Mac only) or Android Emulator
+Before you begin, make sure you have:
 
-### Installation
+1. **Node.js** (v18 or later recommended)
+   - Download from [nodejs.org](https://nodejs.org/)
+   - Verify installation: `node --version`
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+2. **npm** or **yarn** (comes with Node.js)
+   - Verify: `npm --version`
 
-2. Start the development server:
-   ```bash
-   npm start
-   ```
+3. **Expo Go App** (for testing on physical device)
+   - Download from [App Store (iOS)](https://apps.apple.com/app/expo-go/id982107779)
+   - Download from [Google Play (Android)](https://play.google.com/store/apps/details?id=host.exp.exponent)
 
-3. Run on your device:
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app on your physical device
+4. **iOS Simulator** (Mac only - optional)
+   - Install Xcode from Mac App Store
+   - Open Xcode → Settings → Components → Install iOS Simulator
 
-### Location Permissions
+5. **Android Emulator** (optional)
+   - Install [Android Studio](https://developer.android.com/studio)
+   - Set up an Android Virtual Device (AVD)
+
+### Installation & Running
+
+#### Step 1: Clone and Install Dependencies
+
+```bash
+# Navigate to the project directory
+cd /path/to/Airnote-Build
+
+# Install all dependencies
+npm install
+```
+
+#### Step 2: Start the Expo Development Server
+
+```bash
+# Start the development server
+npm start
+
+# Or use these alternative commands:
+npx expo start              # Same as npm start
+npx expo start --clear      # Start with cache cleared (if you have issues)
+```
+
+This will:
+- Start the Metro bundler
+- Open Expo DevTools in your browser
+- Display a QR code in your terminal
+
+#### Step 3: Run the App
+
+You have **three options** to run the app:
+
+**Option 1: Physical Device (Recommended for testing location features)**
+
+1. Install **Expo Go** app on your phone (see Prerequisites)
+2. Make sure your phone and computer are on the **same Wi-Fi network**
+3. Scan the QR code from the terminal:
+   - **iOS**: Use the Camera app to scan the QR code
+   - **Android**: Use the Expo Go app to scan the QR code
+4. The app will load on your device
+
+**Option 2: iOS Simulator (Mac only)**
+
+```bash
+# In the Expo DevTools terminal, press 'i'
+# Or run:
+npx expo start --ios
+```
+
+**Option 3: Android Emulator**
+
+```bash
+# Make sure Android emulator is running first
+# In the Expo DevTools terminal, press 'a'
+# Or run:
+npx expo start --android
+```
+
+#### Step 4: Enable Location Permissions
+
+When the app launches for the first time:
+
+- **iOS**: A popup will ask for location permission → Tap **"Allow While Using App"**
+- **Android**: A popup will request location access → Tap **"Allow"**
+
+⚠️ **Important**: The app requires location access to function. Without it, you won't see any notes or be able to create them.
+
+### Development Tips
+
+**Hot Reload**
+- Changes to code automatically reload the app
+- Press `r` in terminal to manually reload
+- Shake your device to open the developer menu
+
+**Useful Commands**
+```bash
+npm start                    # Start development server
+npx expo start --clear       # Clear cache and start
+npx expo start --offline     # Start without checking for updates
+npx expo start --lan         # Use LAN instead of localhost
+```
+
+**Developer Menu**
+- **iOS Simulator**: Press `Cmd + D`
+- **Android Emulator**: Press `Cmd + M` (Mac) or `Ctrl + M` (Windows/Linux)
+- **Physical Device**: Shake the device
+
+**View Logs**
+```bash
+# Terminal will show logs automatically
+# Or press 'd' in terminal to open developer tools
+```
+
+### Troubleshooting
+
+**Issue: "Unable to resolve module"**
+```bash
+# Clear cache and reinstall
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
+
+**Issue: "Network response timed out"**
+- Ensure phone and computer are on same Wi-Fi
+- Try running: `npx expo start --lan`
+- Disable VPN if active
+
+**Issue: "Location permission denied"**
+- iOS: Settings → Privacy & Security → Location Services → Expo Go → "While Using"
+- Android: Settings → Apps → Expo Go → Permissions → Location → "Allow only while using the app"
+
+**Issue: Expo Go app shows blank screen**
+- Shake device → Reload
+- Close and restart Expo Go app
+- Check terminal for error messages
+
+**Issue: "Command not found: expo"**
+```bash
+# Install Expo CLI globally (optional)
+npm install -g expo-cli
+
+# Or always use npx:
+npx expo start
+```
+
+### Testing the App
+
+Once running, you can:
+
+1. **View the Home feed** - See mock notes created by the app (seeded data)
+2. **Create a note** - Tap the + button, write content, set duration/radius
+3. **View Map** - Tap Map tab to see notes visualized on a map
+4. **Try Private Notes** - Tap My Notes tab to create location-based personal reminders
+5. **Test Dark Mode** - Tap Settings → Toggle Dark Mode
+6. **Adjust Text Size** - Tap Settings → Select text size preference
+
+**Note**: Since this is a prototype with in-memory storage, all notes reset when you restart the app.
+
+### Location Permissions & Privacy
 
 The app requires location permissions to function:
-- **iOS**: Permission will be requested on first launch
-- **Android**: Location permissions are declared in app.json
+- **iOS**: Permission requested on first launch - choose "Allow While Using App"
+- **Android**: Location permissions declared in [app.json](app.json)
+- **Privacy**: Location data is only used locally in this prototype. No data is sent to any server.
 
 ## Project Structure
 
