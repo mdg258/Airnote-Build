@@ -8,6 +8,98 @@
   ![Status](https://img.shields.io/badge/status-prototype-yellow)
   ![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue)
   ![License](https://img.shields.io/badge/license-MIT-green)
+
+  ---
+
+  **[Screenshots](#-screenshots)** •
+  **[Problem & Solution](#-the-problem--solution)** •
+  **[Current Status](#️-current-status-mvp-prototype)** •
+  **[Features](#-key-features)** •
+  **[Quick Start](#-quick-start---running-the-app)** •
+  **[Roadmap](#-production-roadmap)** •
+  **[Architecture](#architecture)** •
+  **[Tech Stack](#tech-stack)**
+
+</div>
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9145.PNG" alt="Home Feed" width="250"/>
+      <br />
+      <strong>Home Feed</strong>
+      <br />
+      <em>Browse nearby notes with distance and time remaining</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9151.PNG" alt="Dark Mode" width="250"/>
+      <br />
+      <strong>Dark Mode</strong>
+      <br />
+      <em>Full dark theme support throughout the app</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9148.PNG" alt="Settings" width="250"/>
+      <br />
+      <strong>Settings</strong>
+      <br />
+      <em>Dark mode toggle and text size controls</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9149.PNG" alt="Leave/Send Note Modal" width="250"/>
+      <br />
+      <strong>Leave / Send Note</strong>
+      <br />
+      <em>Leave personal reminders or broadcast nearby</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9144.PNG" alt="Send Public Note" width="250"/>
+      <br />
+      <strong>Send Public Note</strong>
+      <br />
+      <em>Set radius, duration, and location</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9150.PNG" alt="Leave Public Note" width="250"/>
+      <br />
+      <strong>Leave Public Note</strong>
+      <br />
+      <em>Pin a note to your location</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9146.PNG" alt="Note Detail" width="250"/>
+      <br />
+      <strong>Note Details</strong>
+      <br />
+      <em>View notes and add comments</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9147.PNG" alt="Map View" width="250"/>
+      <br />
+      <strong>Map View</strong>
+      <br />
+      <em>Visualize notes clustered by location</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/Screenshot 2026-02-04 at 12.51.05.png" alt="My Notes Screen" width="250"/>
+      <br />
+      <strong>My Notes</strong>
+      <br />
+      <em>Personal location-based reminders (e.g., food/drink you want to remember)</em>
+    </td>
+  </tr>
+</table>
+
 </div>
 
 ---
@@ -145,91 +237,6 @@ This is a **fully functional prototype** with in-memory data storage. All data i
 - ❌ Analytics and crash reporting
 
 See the [Production Roadmap](#-production-roadmap) section for details.
-
----
-
-## 📸 Screenshots
-
-<div align="center">
-
-### Core Features
-
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9145.PNG" alt="Home Feed" width="250"/>
-      <br />
-      <strong>Home Feed</strong>
-      <br />
-      <em>Browse nearby notes with distance and time remaining</em>
-    </td>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9147.PNG" alt="Map View" width="250"/>
-      <br />
-      <strong>Map View</strong>
-      <br />
-      <em>Visualize notes clustered by location</em>
-    </td>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9146.PNG" alt="Note Detail" width="250"/>
-      <br />
-      <strong>Note Details</strong>
-      <br />
-      <em>View notes and add comments</em>
-    </td>
-  </tr>
-</table>
-
-### Creating Notes
-
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9144.PNG" alt="Create Note" width="250"/>
-      <br />
-      <strong>Send Public Note</strong>
-      <br />
-      <em>Set radius, duration, and location</em>
-    </td>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9149.PNG" alt="Private Note Modal" width="250"/>
-      <br />
-      <strong>Leave / Send Note</strong>
-      <br />
-      <em>Leave personal reminders or broadcast nearby</em>
-    </td>
-    <td align="center" width="33%">
-      <img src="tmp/IMG_9150.PNG" alt="Location Selection" width="250"/>
-      <br />
-      <strong>Leave Public Note</strong>
-      <br />
-      <em>Pin a note to your location</em>
-    </td>
-  </tr>
-</table>
-
-### Customization
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="tmp/IMG_9148.PNG" alt="Settings" width="250"/>
-      <br />
-      <strong>Settings</strong>
-      <br />
-      <em>Dark mode toggle and text size controls</em>
-    </td>
-    <td align="center" width="50%">
-      <img src="tmp/IMG_9151.PNG" alt="Dark Mode" width="250"/>
-      <br />
-      <strong>Dark Mode</strong>
-      <br />
-      <em>Full dark theme support throughout the app</em>
-    </td>
-  </tr>
-</table>
-
-</div>
 
 ---
 
