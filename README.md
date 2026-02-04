@@ -146,11 +146,107 @@ This is a **fully functional prototype** with in-memory data storage. All data i
 
 See the [Production Roadmap](#-production-roadmap) section for details.
 
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Core Features
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9145.PNG" alt="Home Feed" width="250"/>
+      <br />
+      <strong>Home Feed</strong>
+      <br />
+      <em>Browse nearby notes with distance and time remaining</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9147.PNG" alt="Map View" width="250"/>
+      <br />
+      <strong>Map View</strong>
+      <br />
+      <em>Visualize notes clustered by location</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9146.PNG" alt="Note Detail" width="250"/>
+      <br />
+      <strong>Note Details</strong>
+      <br />
+      <em>View notes and add comments</em>
+    </td>
+  </tr>
+</table>
+
+### Creating Notes
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9144.PNG" alt="Create Note" width="250"/>
+      <br />
+      <strong>Send Public Note</strong>
+      <br />
+      <em>Set radius, duration, and location</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9149.PNG" alt="Private Note Modal" width="250"/>
+      <br />
+      <strong>Leave / Send Note</strong>
+      <br />
+      <em>Leave personal reminders or broadcast nearby</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="tmp/IMG_9150.PNG" alt="Location Selection" width="250"/>
+      <br />
+      <strong>Leave Public Note</strong>
+      <br />
+      <em>Pin a note to your location</em>
+    </td>
+  </tr>
+</table>
+
+### Customization
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="tmp/IMG_9148.PNG" alt="Settings" width="250"/>
+      <br />
+      <strong>Settings</strong>
+      <br />
+      <em>Dark mode toggle and text size controls</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="tmp/IMG_9151.PNG" alt="Dark Mode" width="250"/>
+      <br />
+      <strong>Dark Mode</strong>
+      <br />
+      <em>Full dark theme support throughout the app</em>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+---
+
+## ✨ Key Features
+
 - **Location-based notes**: Create and discover notes near your current location
 - **Ephemeral content**: Notes expire after a set duration (15m, 30m, 1h, 4h, 24h)
-- **Proximity filtering**: Notes only appear within their defined radius (10m, 25m, 50m, 100m)
+- **Proximity filtering**: Notes only appear within their defined radius (30ft to 1 mile)
+- **Map visualization**: See notes clustered on an interactive map with place grouping
+- **Private notes**: Leave personal location-based reminders that never post publicly
+- **Comments system**: Engage with nearby notes (location-validated)
+- **Dark mode**: Full light/dark theme support with smooth transitions
+- **Text size controls**: Accessibility options for comfortable reading
 - **Clean iOS-inspired UI**: Minimal, airy design with custom color palette
 - **Real-time updates**: Feed automatically updates to show current distances and time remaining
+
+---
 
 ## 🚀 Quick Start - Running the App
 
