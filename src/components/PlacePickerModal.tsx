@@ -8,8 +8,8 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, borderRadius } from '../theme/colors';
 import { placesService, PlaceWithDistance } from '../services/placesService';

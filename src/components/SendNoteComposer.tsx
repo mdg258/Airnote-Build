@@ -90,7 +90,7 @@ export const SendNoteComposer: React.FC<SendNoteComposerProps> = ({
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
-              showsPointsOfInterest={false}
+              showsPointsOfInterests={false}
               showsBuildings={false}
               region={{
                 latitude,

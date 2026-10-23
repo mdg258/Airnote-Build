@@ -233,7 +233,7 @@ export const MapScreen: React.FC = () => {
             showsMyLocationButton={false}
             showsCompass={false}
             showsScale={false}
-            showsPointsOfInterest={false}
+            showsPointsOfInterests={false}
             showsBuildings={false}
             loadingEnabled={true}
             loadingIndicatorColor={theme.primaryDark}
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   openingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   centerContent: {
     flex: 1,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },

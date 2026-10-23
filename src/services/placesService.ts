@@ -30,7 +30,7 @@ const NEARBY_CACHE_DURATION = 60 * 1000; // 60 seconds for nearby
 const inFlightRequests = new Map<string, Promise<PlaceWithDistance[]>>();
 
 // Debounce timers
-const debounceTimers = new Map<string, NodeJS.Timeout>();
+const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 /**
  * Calculate bounding box around a point with given radius in meters

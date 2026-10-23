@@ -1,4 +1,4 @@
-import { Note, CreateNoteInput, Duration, NoteCategory } from '../types/note';
+import { Note, CreateNoteInput, Duration, NoteCategory, Radius } from '../types/note';
 import { calculateDistance } from '../utils/location';
 
 // In-memory storage for notes
@@ -223,7 +223,7 @@ export const notesService = {
         placeId: 'dq-grill-chill',
         latitude: 37.43307246741869,
         longitude: -77.61065958748061,
-        radius: 100,
+        radius: 91.44 as Radius, // 300ft
         duration: '30m' as Duration,
         category: 'info' as NoteCategory,
       },
@@ -233,7 +233,7 @@ export const notesService = {
         placeId: 'dq-grill-chill',
         latitude: 37.43307246741869,
         longitude: -77.61065958748061,
-        radius: 75,
+        radius: 91.44 as Radius, // 300ft
         duration: '1h' as Duration,
         category: 'info' as NoteCategory,
       },
@@ -243,7 +243,7 @@ export const notesService = {
         placeId: 'dq-grill-chill',
         latitude: 37.43307246741869,
         longitude: -77.61065958748061,
-        radius: 100,
+        radius: 91.44 as Radius, // 300ft
         duration: '15m' as Duration,
       },
 
@@ -254,7 +254,7 @@ export const notesService = {
         placeId: 'goodwill',
         latitude: 37.432908540766825,
         longitude: -77.61145697314196,
-        radius: 60,
+        radius: 45.72 as Radius, // 150ft
         duration: '1h' as Duration,
         category: 'info' as NoteCategory,
       },
@@ -264,7 +264,7 @@ export const notesService = {
         placeId: 'goodwill',
         latitude: 37.432908540766825,
         longitude: -77.61145697314196,
-        radius: 100,
+        radius: 91.44 as Radius, // 300ft
         duration: '4h' as Duration,
       },
 
@@ -275,7 +275,7 @@ export const notesService = {
         placeId: 'ample-storage',
         latitude: 37.43048068582967,
         longitude: -77.61127496661474,
-        radius: 75,
+        radius: 91.44 as Radius, // 300ft
         duration: '4h' as Duration,
         category: 'info' as NoteCategory,
       },
@@ -285,7 +285,7 @@ export const notesService = {
         placeId: 'ample-storage',
         latitude: 37.43048068582967,
         longitude: -77.61127496661474,
-        radius: 50,
+        radius: 45.72 as Radius, // 150ft
         duration: '24h' as Duration,
         category: 'issue' as NoteCategory,
       },
@@ -297,7 +297,7 @@ export const notesService = {
         placeId: 'gregs-garage',
         latitude: 37.433646399865566,
         longitude: -77.60932126312186,
-        radius: 75,
+        radius: 91.44 as Radius, // 300ft
         duration: '24h' as Duration,
         category: 'info' as NoteCategory,
       },
@@ -307,7 +307,7 @@ export const notesService = {
         placeId: 'gregs-garage',
         latitude: 37.433646399865566,
         longitude: -77.60932126312186,
-        radius: 50,
+        radius: 45.72 as Radius, // 150ft
         duration: '15m' as Duration,
         category: 'warning' as NoteCategory,
       },
@@ -317,7 +317,7 @@ export const notesService = {
         placeId: 'gregs-garage',
         latitude: 37.433646399865566,
         longitude: -77.60932126312186,
-        radius: 100,
+        radius: 91.44 as Radius, // 300ft
         duration: '4h' as Duration,
         category: 'info' as NoteCategory,
       },

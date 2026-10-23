@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   Animated,
   Linking,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { PlaceGroup, Note } from '../types/note';
@@ -160,7 +160,7 @@ export const PlaceNotesModal: React.FC<PlaceNotesModalProps> = ({
               showsMyLocationButton={false}
               showsCompass={false}
               showsScale={false}
-              showsPointsOfInterest={false}
+              showsPointsOfInterests={false}
               showsBuildings={false}
             >
               {/* Place location marker */}
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.25)', // Minimal dimming
   },
   modal: {

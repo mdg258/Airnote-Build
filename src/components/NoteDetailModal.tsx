@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Note } from '../types/note';
@@ -41,7 +41,7 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
 }) => {
   const { theme, textScale, themeMode } = useTheme();
   const isDark = themeMode === 'dark';
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [isInRange, setIsInRange] = useState(false);
 
@@ -170,7 +170,7 @@ export const NoteDetailModal: React.FC<NoteDetailModalProps> = ({
                 showsMyLocationButton={false}
                 showsCompass={false}
                 showsScale={false}
-                showsPointsOfInterest={false}
+                showsPointsOfInterests={false}
                 showsBuildings={false}
               >
                 {/* Note location marker */}
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modal: {

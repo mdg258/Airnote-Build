@@ -94,7 +94,7 @@ export const ReleaseAnimation: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',

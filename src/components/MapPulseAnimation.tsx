@@ -128,7 +128,7 @@ export const MapPulseAnimation: React.FC<MapPulseAnimationProps> = ({ isVisible 
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },

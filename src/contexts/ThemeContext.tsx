@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { lightTheme, darkTheme } from '../theme/colors';
 
-type Theme = typeof lightTheme;
+type Theme = typeof lightTheme | typeof darkTheme;
 type ThemeMode = 'light' | 'dark';
 type TextSize = 'medium' | 'large' | 'extra-large' | 'extra-extra-large';
 

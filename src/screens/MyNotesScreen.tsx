@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
   Modal,
   TextInput,
@@ -15,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing } from '../theme/colors';
@@ -541,7 +540,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   createNoteCard: {

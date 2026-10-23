@@ -85,7 +85,7 @@ export const LeaveNoteComposer: React.FC<LeaveNoteComposerProps> = ({
               zoomEnabled={false}
               rotateEnabled={false}
               pitchEnabled={false}
-              showsPointsOfInterest={false}
+              showsPointsOfInterests={false}
               showsBuildings={false}
               region={{
                 latitude,

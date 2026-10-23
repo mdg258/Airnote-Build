@@ -6,12 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FBFAFB"
-    },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -30,6 +27,17 @@
     },
     "web": {
       "favicon": "./assets/logo.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FBFAFB",
+          "imageWidth": 200
+        }
+      ]
+    ]
   }
 }
