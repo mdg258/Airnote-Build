@@ -206,7 +206,7 @@ export const notesService = {
   },
 
   /**
-   * Seed sample notes at specific locations
+   * Seed sample notes around Reston Town Center
    * Call this function to populate test data
    */
   seedNotes: (): void => {
@@ -216,110 +216,140 @@ export const notesService = {
     notes = [];
 
     const seedData = [
-      // DQ Grill & Chill notes
+      // Signature Apartments notes
       {
-        text: 'Half-price blizzards today 2-4pm!',
-        placeName: 'DQ Grill & Chill',
-        placeId: 'dq-grill-chill',
-        latitude: 37.43307246741869,
-        longitude: -77.61065958748061,
+        text: 'Package room is backed up - check the overflow shelf by the mail lockers',
+        placeName: 'Signature Apartments',
+        placeId: 'signature-reston',
+        latitude: 38.9597968,
+        longitude: -77.3553872,
+        radius: 45.72 as Radius, // 150ft
+        duration: '4h' as Duration,
+        category: 'info' as NoteCategory,
+      },
+      {
+        text: 'Rooftop grills are open tonight, bring your own charcoal',
+        placeName: 'Signature Apartments',
+        placeId: 'signature-reston',
+        latitude: 38.9597968,
+        longitude: -77.3553872,
         radius: 91.44 as Radius, // 300ft
+        duration: '4h' as Duration,
+        category: 'invite' as NoteCategory,
+      },
+
+      // Reston Town Center Pavilion notes
+      {
+        text: 'Free live music at the Pavilion starting at 7pm!',
+        placeName: 'Reston Town Center Pavilion',
+        placeId: 'rtc-pavilion',
+        latitude: 38.9583653,
+        longitude: -77.3569087,
+        radius: 91.44 as Radius, // 300ft
+        duration: '4h' as Duration,
+        category: 'invite' as NoteCategory,
+      },
+      {
+        text: 'Found a set of car keys on a bench near the stage - turned in to security',
+        placeName: 'Reston Town Center Pavilion',
+        placeId: 'rtc-pavilion',
+        latitude: 38.9583653,
+        longitude: -77.3569087,
+        radius: 91.44 as Radius, // 300ft
+        duration: '24h' as Duration,
+        category: 'lostfound' as NoteCategory,
+      },
+
+      // Mercury Fountain notes
+      {
+        text: 'Pigeons are bold today, guard your snacks 🐦',
+        placeName: 'Mercury Fountain',
+        placeId: 'mercury-fountain',
+        latitude: 38.9589259,
+        longitude: -77.3569034,
+        radius: 45.72 as Radius, // 150ft
+        duration: '1h' as Duration,
+        category: 'warning' as NoteCategory,
+      },
+
+      // Tatte Bakery & Cafe notes
+      {
+        text: 'Line is out the door - mobile order is way faster',
+        placeName: 'Tatte Bakery & Cafe',
+        placeId: 'tatte-reston',
+        latitude: 38.9588361,
+        longitude: -77.3573351,
+        radius: 45.72 as Radius, // 150ft
         duration: '30m' as Duration,
         category: 'info' as NoteCategory,
       },
       {
-        text: 'Order the chicken strip basket - best value on the menu',
-        placeName: 'DQ Grill & Chill',
-        placeId: 'dq-grill-chill',
-        latitude: 37.43307246741869,
-        longitude: -77.61065958748061,
-        radius: 91.44 as Radius, // 300ft
-        duration: '1h' as Duration,
-        category: 'info' as NoteCategory,
-      },
-      {
-        text: 'Soft serve machine is working today! 🎉',
-        placeName: 'DQ Grill & Chill',
-        placeId: 'dq-grill-chill',
-        latitude: 37.43307246741869,
-        longitude: -77.61065958748061,
-        radius: 91.44 as Radius, // 300ft
-        duration: '15m' as Duration,
-      },
-
-      // Goodwill notes
-      {
-        text: 'Saw vintage Nintendo games here - shelf near back',
-        placeName: 'Goodwill',
-        placeId: 'goodwill',
-        latitude: 37.432908540766825,
-        longitude: -77.61145697314196,
+        text: 'Get the shakshuka, trust me',
+        placeName: 'Tatte Bakery & Cafe',
+        placeId: 'tatte-reston',
+        latitude: 38.9588361,
+        longitude: -77.3573351,
         radius: 45.72 as Radius, // 150ft
-        duration: '1h' as Duration,
-        category: 'info' as NoteCategory,
-      },
-      {
-        text: '50% off all clothing today only!',
-        placeName: 'Goodwill',
-        placeId: 'goodwill',
-        latitude: 37.432908540766825,
-        longitude: -77.61145697314196,
-        radius: 91.44 as Radius, // 300ft
         duration: '4h' as Duration,
+        category: 'other' as NoteCategory,
       },
 
-      // Ample Storage notes
+      // LOOK Cinemas notes
       {
-        text: 'Moving boxes available - free to take!',
-        placeName: 'Ample Storage',
-        placeId: 'ample-storage',
-        latitude: 37.43048068582967,
-        longitude: -77.61127496661474,
-        radius: 91.44 as Radius, // 300ft
-        duration: '4h' as Duration,
-        category: 'info' as NoteCategory,
-      },
-      {
-        text: 'Unit 42 door sticks - push hard on bottom left',
-        placeName: 'Ample Storage',
-        placeId: 'ample-storage',
-        latitude: 37.43048068582967,
-        longitude: -77.61127496661474,
-        radius: 45.72 as Radius, // 150ft
-        duration: '24h' as Duration,
-        category: 'issue' as NoteCategory,
-      },
-
-      // Greg's Garage notes
-      {
-        text: "Ask for Mike - he'll give you the best price on oil changes",
-        placeName: "Greg's Garage",
-        placeId: 'gregs-garage',
-        latitude: 37.433646399865566,
-        longitude: -77.60932126312186,
+        text: 'Recliner seats in theater 5 are the comfiest',
+        placeName: 'LOOK Cinemas',
+        placeId: 'look-cinemas-reston',
+        latitude: 38.9588376,
+        longitude: -77.3581209,
         radius: 91.44 as Radius, // 300ft
         duration: '24h' as Duration,
         category: 'info' as NoteCategory,
       },
+
+      // Ice Cream Jubilee notes
       {
-        text: 'Appointment running 30 min late - grab coffee next door',
-        placeName: "Greg's Garage",
-        placeId: 'gregs-garage',
-        latitude: 37.433646399865566,
-        longitude: -77.60932126312186,
+        text: 'Banana bourbon caramel is back this week 🍦',
+        placeName: 'Ice Cream Jubilee',
+        placeId: 'ice-cream-jubilee-reston',
+        latitude: 38.958871,
+        longitude: -77.3606052,
         radius: 45.72 as Radius, // 150ft
-        duration: '15m' as Duration,
+        duration: '4h' as Duration,
+        category: 'info' as NoteCategory,
+      },
+
+      // Reston Regional Library notes
+      {
+        text: 'Study rooms are all booked until 3pm',
+        placeName: 'Reston Regional Library',
+        placeId: 'reston-regional-library',
+        latitude: 38.9614685,
+        longitude: -77.3585049,
+        radius: 91.44 as Radius, // 300ft
+        duration: '1h' as Duration,
         category: 'warning' as NoteCategory,
       },
+
+      // Whole Foods Market notes
       {
-        text: 'They accept walk-ins for tire rotation - no appointment needed',
-        placeName: "Greg's Garage",
-        placeId: 'gregs-garage',
-        latitude: 37.433646399865566,
-        longitude: -77.60932126312186,
-        radius: 91.44 as Radius, // 300ft
-        duration: '4h' as Duration,
+        text: 'Hot bar just restocked, mac and cheese is fresh',
+        placeName: 'Whole Foods Market',
+        placeId: 'whole-foods-reston',
+        latitude: 38.9615838,
+        longitude: -77.3556267,
+        radius: 45.72 as Radius, // 150ft
+        duration: '30m' as Duration,
         category: 'info' as NoteCategory,
+      },
+      {
+        text: 'Parking garage level 1 is full - go straight to level 2',
+        placeName: 'Whole Foods Market',
+        placeId: 'whole-foods-reston',
+        latitude: 38.9615838,
+        longitude: -77.3556267,
+        radius: 91.44 as Radius, // 300ft
+        duration: '1h' as Duration,
+        category: 'warning' as NoteCategory,
       },
     ];
 
